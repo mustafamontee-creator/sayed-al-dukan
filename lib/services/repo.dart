@@ -65,6 +65,18 @@ class Repo {
     return [for (final r in rows) ContentBlock.fromMap(Map<String, dynamic>.from(r))];
   }
 
+  // ---- customer notifications (order status history) ----------------------
+  Future<List<Map<String, dynamic>>> notifications() async {
+    if (!isLoggedIn) return [];
+    final rows = await _db
+        .from('order_events')
+        .select('id, status, note, created_at, orders!inner(order_number, user_id)')
+        .eq('orders.user_id', _uid)
+        .order('created_at', ascending: false)
+        .limit(50);
+    return [for (final row in rows) Map<String, dynamic>.from(row)];
+  }
+
   // ---- addresses ----------------------------------------------------------
   Future<List<Address>> addresses() async {
     final rows = await _db
