@@ -1,0 +1,32 @@
+name: Flutter checks (no APK)
+on:
+  push:
+    branches: [feature/pro-ui-refresh]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.1'
+          channel: stable
+          cache: true
+      - name: Generate platform files and fetch packages
+        run: bash setup.sh
+      - name: Analyze Dart code
+        run: flutter analyze --no-fatal-infos
+      - name: Run tests
+        run: flutter test
