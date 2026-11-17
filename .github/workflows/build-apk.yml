@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/pro-ui-refresh]
   workflow_dispatch:
 
 permissions:
@@ -31,15 +31,19 @@ jobs:
       - name: Generate Android project
         run: bash setup.sh
 
-      - name: Analyze, test and build APK
+      - name: Analyze, test and build signed APK
         env:
           SUPABASE_URL: https://vusjswnvqbxspdgbekxc.supabase.co
-          SUPABASE_PUBLISHABLE_KEY: sb_publishable_-FnAVg38wgT94t6kbSuT3A_mqmgs5mz
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: sayed-al-dukan-release
         run: bash build_apk.sh
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: sayed-al-dukan-android-apk
+          name: sayed-al-dukan-android-v${{ github.sha }}
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
