@@ -1,0 +1,45 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: stable
+          cache: true
+
+      - name: Generate Android project
+        run: bash setup.sh
+
+      - name: Analyze, test and build APK
+        env:
+          SUPABASE_URL: https://vusjswnvqbxspdgbekxc.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_-FnAVg38wgT94t6kbSuT3A_mqmgs5mz
+        run: bash build_apk.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sayed-al-dukan-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
