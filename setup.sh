@@ -13,39 +13,31 @@ python3 tools/patch_android.py
 # Keep the Android toolchain compatible with app_links 6.4.1.
 python3 - <<'PY'
 from pathlib import Path
-import re
 
 settings = Path("android/settings.gradle")
-if settings.exists():
-    content = settings.read_text()
-    content, agp_count = re.subn(
-        r'(id ["\\']com\\.android\\.application["\\'] version ["\\'])[^"\\']+(["\\'] apply false)',
-        r'\\g<1>8.12.0\\g<2>',
-        content,
-    )
-    content, kotlin_count = re.subn(
-        r'(id ["\\']org\\.jetbrains\\.kotlin\\.android["\\'] version ["\\'])[^"\\']+(["\\'] apply false)',
-        r'\\g<1>2.2.0\\g<2>',
-        content,
-    )
-    if agp_count == 0:
-        raise SystemExit("Could not locate Android Gradle Plugin version in android/settings.gradle")
-    if kotlin_count == 0:
-        raise SystemExit("Could not locate Kotlin plugin version in android/settings.gradle")
-    settings.write_text(content)
+content = settings.read_text()
+for marker, version in (
+    ('id "com.android.application" version "', "8.12.0"),
+    ('id "org.jetbrains.kotlin.android" version "', "2.2.0"),
+):
+    if marker not in content:
+        raise SystemExit(f"Could not locate plugin declaration: {marker}")
+    start = content.index(marker) + len(marker)
+    end = content.index('"', start)
+    content = content[:start] + version + content[end:]
+settings.write_text(content)
 
 wrapper = Path("android/gradle/wrapper/gradle-wrapper.properties")
-if wrapper.exists():
-    content = wrapper.read_text()
-    content, count = re.subn(
-        r'^distributionUrl=.*$',
-        'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.3-bin.zip',
-        content,
-        flags=re.MULTILINE,
-    )
-    if count == 0:
-        raise SystemExit("Could not locate Gradle distributionUrl")
-    wrapper.write_text(content)
+lines = wrapper.read_text().splitlines()
+found = False
+for index, line in enumerate(lines):
+    if line.startswith("distributionUrl="):
+        lines[index] = "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.14.3-bin.zip"
+        found = True
+        break
+if not found:
+    raise SystemExit("Could not locate Gradle distributionUrl")
+wrapper.write_text("\n".join(lines) + "\n")
 PY
 
 flutter pub get
