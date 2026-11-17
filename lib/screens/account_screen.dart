@@ -79,7 +79,7 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('تغيير كلمة المرور'),
+          title: Text(context.t('changePassword')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -87,7 +87,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 controller: password,
                 obscureText: obscure,
                 decoration: InputDecoration(
-                  labelText: 'كلمة المرور الجديدة',
+                  labelText: context.t('newPassword'),
                   suffixIcon: IconButton(
                     onPressed: () => setDialogState(() => obscure = !obscure),
                     icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
@@ -98,10 +98,10 @@ class _AccountScreenState extends State<AccountScreen> {
               TextField(
                 controller: confirm,
                 obscureText: obscure,
-                decoration: const InputDecoration(labelText: 'تأكيد كلمة المرور الجديدة'),
+                decoration: const InputDecoration(labelText: context.t('confirmPassword')),
               ),
               const SizedBox(height: 8),
-              const Text('استخدم 8 أحرف على الأقل.', style: TextStyle(fontSize: 12, color: muted)),
+              Text(context.t('passwordHint'), style: const TextStyle(fontSize: 12, color: muted)),
             ],
           ),
           actions: [
@@ -114,7 +114,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 final p = password.text;
                 if (p.length < 8 || p != confirm.text) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('تأكد من تطابق كلمتي المرور وأنهما 8 أحرف على الأقل.')),
+                    SnackBar(content: Text(context.t('passwordValidation'))),
                   );
                   return;
                 }
@@ -133,7 +133,7 @@ class _AccountScreenState extends State<AccountScreen> {
               },
               child: saving
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('حفظ كلمة المرور'),
+                  : Text(context.t('save')),
             ),
           ],
         ),
@@ -143,7 +143,7 @@ class _AccountScreenState extends State<AccountScreen> {
     confirm.dispose();
     if (changed == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')),
+        SnackBar(content: Text(context.t('passwordSaved'))),
       );
     }
   }
@@ -372,7 +372,7 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               onPressed: () => _changePassword(auth),
               icon: const Icon(Icons.lock_reset_rounded),
-              label: const Text('تغيير كلمة المرور', style: TextStyle(fontWeight: FontWeight.w800)),
+              label: Text(context.t('changePassword'), style: const TextStyle(fontWeight: FontWeight.w800)),
             ),
           ),
           const SizedBox(height: 22),
