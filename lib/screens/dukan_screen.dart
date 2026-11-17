@@ -9,6 +9,7 @@ import '../services/cart_service.dart';
 import '../services/repo.dart';
 import '../ui/widgets.dart';
 import 'cart_screen.dart';
+import 'notifications_screen.dart';
 import 'product_screen.dart';
 
 class DukanScreen extends StatefulWidget {
@@ -53,35 +54,70 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
       backgroundColor: AppColors.blue,
       body: SafeArea(
         child: Column(children: [
-          // Header follows the approved physical order: logo LEFT, "شرفتونا"
-          // in black, and the welcome phrase at the far RIGHT. The red cart
-          // stays in its own small row at the upper-left to avoid covering them.
+          // A compact, intentional dark header with equal-size action buttons.
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: Column(children: [
-                const Row(children: [_CartButton()]),
-                const SizedBox(height: 4),
-                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                  Image.asset('assets/images/logo.jpeg', height: 96, width: 78, fit: BoxFit.contain),
-                  const SizedBox(width: 8),
-                  Text(context.t('sharaftuna'),
-                      textDirection: dir,
-                      style: const TextStyle(
-                          color: AppColors.black, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  Flexible(
-                    child: Text(context.t('welcome'),
-                        textDirection: dir,
-                        textAlign: TextAlign.right,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.black,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Column(
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [_CartButton(), _NotificationButton()],
                   ),
-                ]),
-              ]),
+                  const SizedBox(height: 10),
+                  Row(
+                    textDirection: TextDirection.ltr,
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: const BoxDecoration(
+                          color: AppColors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Transform.scale(
+                          scale: 1.35,
+                          child: Image.asset('assets/images/logo.jpeg', fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          context.t('sharaftuna'),
+                          textDirection: Directionality.of(context),
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          context.t('welcome'),
+                          textDirection: Directionality.of(context),
+                          textAlign: TextAlign.end,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -144,6 +180,26 @@ class _CartButton extends StatelessWidget {
               ),
             ),
         ]),
+      ),
+    );
+  }
+}
+
+class _NotificationButton extends StatelessWidget {
+  const _NotificationButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      customBorder: const CircleBorder(),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+      ),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: const BoxDecoration(color: AppColors.white, shape: BoxShape.circle),
+        child: const Icon(Icons.notifications_none, color: AppColors.black, size: 23),
       ),
     );
   }
