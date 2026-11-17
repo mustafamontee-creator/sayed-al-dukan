@@ -98,7 +98,7 @@ class _AccountScreenState extends State<AccountScreen> {
               TextField(
                 controller: confirm,
                 obscureText: obscure,
-                decoration: const InputDecoration(labelText: context.t('confirmPassword')),
+                decoration: InputDecoration(labelText: context.t('confirmPassword')),
               ),
               const SizedBox(height: 8),
               Text(context.t('passwordHint'), style: const TextStyle(fontSize: 12, color: muted)),
