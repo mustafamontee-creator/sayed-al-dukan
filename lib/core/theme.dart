@@ -87,6 +87,6 @@ ThemeData buildTheme(String lang) {
   );
   final text = lang == 'ar'
       ? GoogleFonts.tajawalTextTheme(base.textTheme)
-      : GoogleFonts.interTextTheme(base.textTheme).apply(fontWeight: FontWeight.w600, displayColor: b, bodyColor: b);
+      : GoogleFonts.interTextTheme(base.textTheme).apply(displayColor: b, bodyColor: b);
   return base.copyWith(textTheme: text.apply(bodyColor: b, displayColor: b));
 }
