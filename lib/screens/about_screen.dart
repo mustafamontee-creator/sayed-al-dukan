@@ -65,7 +65,7 @@ class _AboutScreenState extends State<AboutScreen> {
       child: ListView(padding: const EdgeInsets.all(20), children: [
         const Center(child: Icon(Icons.info_outline, size: 46)),
         const SizedBox(height: 8),
-        Center(child: Text(en ? 'About the app' : 'نبذة عن التطبيق', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
+        Center(child: Text(en ? 'About us' : 'نبذة عننا', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold))),
         const SizedBox(height: 8),
         const Center(child: Text('سوق المنتجات السودانية في مكان واحد', textAlign: TextAlign.center)),
         const SizedBox(height: 20),
