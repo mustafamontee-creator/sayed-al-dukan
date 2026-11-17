@@ -15,7 +15,7 @@ import 'services/settings_controller.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (AppConfig.isConfigured) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, anonKey: AppConfig.supabasePublishableKey);
+    await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
   }
   final prefs = await SharedPreferences.getInstance();
   final settings = SettingsController(prefs);
