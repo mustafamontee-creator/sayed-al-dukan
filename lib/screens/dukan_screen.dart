@@ -83,7 +83,7 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
                         ),
                         child: Transform.scale(
                           scale: 1.35,
-                          child: Image.asset('assets/images/logo.jpeg', fit: BoxFit.cover),
+                          child: Image.asset('assets/images/sayed_logo.png', fit: BoxFit.contain),
                         ),
                       ),
                       const SizedBox(width: 10),
