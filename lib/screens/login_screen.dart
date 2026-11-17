@@ -198,6 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _emailCode,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(labelText: context.t('code')),
                   ),
