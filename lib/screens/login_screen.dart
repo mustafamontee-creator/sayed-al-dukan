@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _phone,
                     keyboardType: TextInputType.phone,
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\\s-]'))],
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]'))],
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
                         labelText: context.t('phone'), prefixText: '+20  ', hintText: '10XXXXXXXX'),
