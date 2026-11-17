@@ -160,9 +160,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: context.t('phone'), prefixText: '+20  ', hintText: '10XXXXXXXX'),
                   ),
                   const SizedBox(height: 12),
-                  ElevatedButton(
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.blue, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
                     onPressed: _busy ? null : _sendPhone,
-                    child: Text(context.t('phoneLogin')),
+                    icon: const Icon(Icons.phone_rounded, color: Colors.white),
+                    label: Text(context.t('phoneLogin')),
                   ),
                 ] else ...[
                   TextField(
@@ -214,9 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
                 if (showGoogle) ...[
                   const SizedBox(height: 12),
-                  ElevatedButton(
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.black, backgroundColor: Colors.white, minimumSize: const Size.fromHeight(48), side: const BorderSide(color: Color(0xFFDADCE0))),
                     onPressed: _busy ? null : () => _run(_auth.signInGoogle),
-                    child: Text(context.t('google')),
+                    icon: const _GoogleMark(),
+                    label: Text(context.t('google')),
                   ),
                   TextButton(
                     onPressed: _busy ? null : () => setState(() {
@@ -291,4 +295,18 @@ class _LoginScreenState extends State<LoginScreen> {
       ]),
     );
   }
+}
+
+
+class _GoogleMark extends StatelessWidget {
+  const _GoogleMark();
+
+  @override
+  Widget build(BuildContext context) => ShaderMask(
+    blendMode: BlendMode.srcIn,
+    shaderCallback: (bounds) => const SweepGradient(
+      colors: [Color(0xFF4285F4), Color(0xFF34A853), Color(0xFFFBBC05), Color(0xFFEA4335), Color(0xFF4285F4)],
+    ).createShader(bounds),
+    child: const Text('G', style: TextStyle(fontSize: 23, fontWeight: FontWeight.w900)),
+  );
 }
