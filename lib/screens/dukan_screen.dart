@@ -73,17 +73,13 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
                   Row(
                     textDirection: TextDirection.ltr,
                     children: [
-                      Container(
-                        width: 72,
-                        height: 72,
-                        clipBehavior: Clip.antiAlias,
-                        decoration: const BoxDecoration(
-                          color: AppColors.blue,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Transform.scale(
-                          scale: 1.35,
-                          child: Image.asset('assets/images/sayed_logo.png', fit: BoxFit.contain),
+                      SizedBox(
+                        width: 88,
+                        height: 88,
+                        child: Image.asset(
+                          'assets/images/sayed_logo.png',
+                          fit: BoxFit.contain,
+                          alignment: Alignment.center,
                         ),
                       ),
                       const SizedBox(width: 10),
