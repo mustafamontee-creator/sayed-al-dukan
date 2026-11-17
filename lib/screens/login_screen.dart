@@ -62,7 +62,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _sendPhone() async {
     final phone = _e164();
-    if (!RegExp(r'^\\+[1-9]\\d{7,14}
+    if (!RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(phone)) {
+      setState(() => _err = context.t('invalidPhone'));
+      return;
+    }
+    await _run(() async {
+      await _auth.sendOtp(phone);
+      if (mounted) setState(() => _sent = true);
+    });
+  }
+
+  Future<void> _verifyPhone() async {
+    final code = _code.text.trim();
+    if (!RegExp(r'^\d{6}$').hasMatch(code)) {
+      setState(() => _err = context.t('invalidCode'));
+      return;
+    }
+    await _run(() => _auth.verifyOtp(_e164(), code));
+  }
+
+  Future<void> _sendEmail() async {
+    final email = _email.text.trim();
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      setState(() => _err = context.t('invalidEmail'));
+      return;
+    }
+    await _run(() async {
+      await _auth.sendEmailOtp(email);
+      if (mounted) setState(() => _emailSent = true);
+    });
+  }
+
+  Future<void> _verifyEmail() async {
+    final code = _emailCode.text.trim();
+    if (!RegExp(r'^\d{6}$').hasMatch(code)) {
+      setState(() => _err = context.t('invalidCode'));
+      return;
+    }
+    await _run(() => _auth.verifyEmailOtp(_email.text.trim(), code));
+  }
+
+  Future<void> _run(Future<void> Function() f) async {
     setState(() {
       _busy = true;
       _err = null;
