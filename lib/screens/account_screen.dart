@@ -70,6 +70,84 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Future<void> _changePassword(AuthService auth) async {
+    final password = TextEditingController();
+    final confirm = TextEditingController();
+    var saving = false;
+    var obscure = true;
+    final changed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: const Text('تغيير كلمة المرور'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: password,
+                obscureText: obscure,
+                decoration: InputDecoration(
+                  labelText: 'كلمة المرور الجديدة',
+                  suffixIcon: IconButton(
+                    onPressed: () => setDialogState(() => obscure = !obscure),
+                    icon: Icon(obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirm,
+                obscureText: obscure,
+                decoration: const InputDecoration(labelText: 'تأكيد كلمة المرور الجديدة'),
+              ),
+              const SizedBox(height: 8),
+              const Text('استخدم 8 أحرف على الأقل.', style: TextStyle(fontSize: 12, color: muted)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(dialogContext, false),
+              child: Text(context.t('cancel')),
+            ),
+            FilledButton(
+              onPressed: saving ? null : () async {
+                final p = password.text;
+                if (p.length < 8 || p != confirm.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('تأكد من تطابق كلمتي المرور وأنهما 8 أحرف على الأقل.')),
+                  );
+                  return;
+                }
+                setDialogState(() => saving = true);
+                try {
+                  await auth.changePassword(p);
+                  if (dialogContext.mounted) Navigator.pop(dialogContext, true);
+                } catch (e) {
+                  if (dialogContext.mounted) {
+                    setDialogState(() => saving = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(friendlyError(context, e))),
+                    );
+                  }
+                }
+              },
+              child: saving
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('حفظ كلمة المرور'),
+            ),
+          ],
+        ),
+      ),
+    );
+    password.dispose();
+    confirm.dispose();
+    if (changed == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم تغيير كلمة المرور بنجاح')),
+      );
+    }
+  }
+
   Widget _section(String title, IconData icon) => Padding(
     padding: const EdgeInsets.only(bottom: 11),
     child: Row(children: [
@@ -282,6 +360,21 @@ class _AccountScreenState extends State<AccountScreen> {
             icon: const Icon(Icons.add_location_alt_outlined),
             label: Text(context.t('addAddress'), style: const TextStyle(fontWeight: FontWeight.w800)),
           )),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 52,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.blue,
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFFD8E4ED)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              ),
+              onPressed: () => _changePassword(auth),
+              icon: const Icon(Icons.lock_reset_rounded),
+              label: const Text('تغيير كلمة المرور', style: TextStyle(fontWeight: FontWeight.w800)),
+            ),
+          ),
           const SizedBox(height: 22),
           SizedBox(height: 52, child: OutlinedButton.icon(
             style: OutlinedButton.styleFrom(foregroundColor: red, side: BorderSide(color: red.withValues(alpha: 0.45)),
