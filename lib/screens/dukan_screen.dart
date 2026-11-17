@@ -49,7 +49,6 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final dir = Directionality.of(context);
     return Scaffold(
       backgroundColor: AppColors.blue,
       body: SafeArea(
