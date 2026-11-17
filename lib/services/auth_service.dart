@@ -35,10 +35,11 @@ class AuthService extends ChangeNotifier {
     });
   }
 
-  Future<void> sendOtp(String e164Phone) => _a.signInWithOtp(phone: e164Phone);
+  Future<void> sendOtp(String e164Phone) =>
+      _a.signInWithOtp(phone: e164Phone, shouldCreateUser: false);
 
   Future<void> sendEmailOtp(String emailAddress) =>
-      _a.signInWithOtp(email: emailAddress.trim());
+      _a.signInWithOtp(email: emailAddress.trim(), shouldCreateUser: false);
 
   Future<void> verifyOtp(String e164Phone, String code) =>
       _a.verifyOTP(phone: e164Phone, token: code, type: OtpType.sms);
