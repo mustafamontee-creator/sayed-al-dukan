@@ -150,39 +150,43 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                if (!_sent) ...[
-                  TextField(
-                    controller: _phone,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s-]'))],
-                    textDirection: TextDirection.ltr,
-                    decoration: InputDecoration(
-                        labelText: context.t('phone'), prefixText: '+20  ', hintText: '10XXXXXXXX'),
+                // Phone sign-in is intentionally deferred to a future release.
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8E9EB),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFD5D7DA)),
                   ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.blue, foregroundColor: Colors.white, minimumSize: const Size.fromHeight(48)),
-                    onPressed: _busy ? null : _sendPhone,
-                    icon: const Icon(Icons.phone_rounded, color: Colors.white),
-                    label: Text(context.t('phoneLogin')),
-                  ),
-                ] else ...[
-                  TextField(
-                    controller: _code,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-                    textDirection: TextDirection.ltr,
-                    decoration: InputDecoration(labelText: context.t('code')),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: _busy ? null : _verifyPhone,
-                    child: Text(context.t('verify')),
-                  ),
-                  TextButton(
-                      onPressed: () => setState(() => _sent = false),
-                      child: Text(context.t('back'))),
-                ],
+                  child: Row(children: [
+                    const Icon(Icons.phone_rounded, color: Color(0xFF777B80)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        context.t('phoneLogin'),
+                        style: const TextStyle(
+                          color: Color(0xFF777B80),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD5D7DA),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        context.t('soon'),
+                        style: const TextStyle(
+                          color: Color(0xFF55595E),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ]),
+                ),
                 const Divider(height: 28, color: AppColors.black),
                 if (!_forgotMode && !_emailSent) ...[
                   TextField(
