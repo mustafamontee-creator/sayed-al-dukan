@@ -53,6 +53,9 @@ class AuthService extends ChangeNotifier {
   Future<void> signInApple() =>
       _a.signInWithOAuth(OAuthProvider.apple, redirectTo: AppConfig.oauthRedirect);
 
+  Future<void> changePassword(String newPassword) =>
+      _a.updateUser(UserAttributes(password: newPassword));
+
   Future<void> signOut() => _a.signOut();
 
   @override
