@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _code = TextEditingController();
   final _email = TextEditingController();
   final _emailCode = TextEditingController();
-  bool _sent = false, _emailSent = false, _busy = false;
+  bool _sent = false, _emailSent = false, _busy = false, _forgotMode = false;
   String? _err;
   late final AuthService _auth;
   bool _done = false;
@@ -182,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(context.t('back'))),
                 ],
                 const Divider(height: 28, color: AppColors.black),
-                if (!_emailSent) ...[
+                if (!_forgotMode && !_emailSent) ...[
                   TextField(
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
@@ -194,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _busy ? null : _sendEmail,
                     child: Text(context.t('emailLogin')),
                   ),
-                ] else ...[
+                 ] else if (!_forgotMode && _emailSent) ...[
                   TextField(
                     controller: _emailCode,
                     keyboardType: TextInputType.number,
@@ -217,6 +217,55 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: _busy ? null : () => _run(_auth.signInGoogle),
                     child: Text(context.t('google')),
+                  ),
+                  TextButton(
+                    onPressed: _busy ? null : () => setState(() {
+                      _forgotMode = !_forgotMode;
+                      _emailSent = false;
+                      _email.clear();
+                      _emailCode.clear();
+                      _err = null;
+                    }),
+                    child: Text(
+                      context.t('forgotPassword'),
+                      style: const TextStyle(fontSize: 12, decoration: TextDecoration.underline),
+                    ),
+                  ),
+                ],
+                if (_forgotMode) ...[
+                  TextField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(labelText: context.t('email')),
+                  ),
+                  const SizedBox(height: 8),
+                  if (!_emailSent)
+                    OutlinedButton(
+                      onPressed: _busy ? null : _sendEmail,
+                      child: Text(context.t('sendCode')),
+                    )
+                  else ...[
+                    TextField(
+                      controller: _emailCode,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+                      textDirection: TextDirection.ltr,
+                      decoration: InputDecoration(labelText: context.t('code')),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: _busy ? null : _verifyEmail,
+                      child: Text(context.t('verify')),
+                    ),
+                  ],
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _forgotMode = false;
+                      _emailSent = false;
+                      _err = null;
+                    }),
+                    child: Text(context.t('back')),
                   ),
                 ],
                 if (showApple) ...[
