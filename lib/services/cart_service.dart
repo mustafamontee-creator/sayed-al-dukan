@@ -33,11 +33,11 @@ class CartService extends ChangeNotifier {
   }
 
   void add(Product p, int qty) {
-    final q = qty < p.minQty ? p.minQty : qty;
     final ex = _items[p.id];
     if (ex != null) {
-      ex.quantity += q;
+      ex.quantity += qty < 1 ? 1 : qty;
     } else {
+      final q = qty < p.minQty ? p.minQty : qty;
       _items[p.id] = CartItem(
         productId: p.id,
         name: p.name,
