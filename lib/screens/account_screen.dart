@@ -21,22 +21,78 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<List<Address>>? _f;
   String? _uid;
 
-  void _reload() {
-    setState(() {
-      _f = context.read<Repo>().addresses();
-    });
-  }
+  static const page = Color(0xFFF3F7FA);
+  static const blueSoft = Color(0xFFE8F0F7);
+  static const green = Color(0xFF238653);
+  static const greenSoft = Color(0xFFE7F5EC);
+  static const yellow = Color(0xFFFFC94A);
+  static const red = Color(0xFFD94747);
+  static const line = Color(0xFFE7EDF2);
+  static const muted = Color(0xFF718096);
+
+  void _reload() => setState(() => _f = context.read<Repo>().addresses());
 
   Future<void> _guard(Future<void> Function() op) async {
     try {
       await op();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(friendlyError(context, e))));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(friendlyError(context, e))),
+      );
     }
     if (mounted) _reload();
   }
+
+  Future<void> _logout(AuthService auth) async {
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(context.t('logout')),
+        content: const Text('هل تريد تسجيل الخروج من حسابك؟'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d, false), child: Text(context.t('cancel'))),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: red, foregroundColor: Colors.white),
+            onPressed: () => Navigator.pop(d, true),
+            child: Text(context.t('logout')),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    try {
+      await auth.signOut();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(friendlyError(context, e))),
+      );
+    }
+  }
+
+  Widget _section(String title, IconData icon) => Padding(
+    padding: const EdgeInsets.only(bottom: 11),
+    child: Row(children: [
+      Icon(icon, size: 19, color: AppColors.blue),
+      const SizedBox(width: 8),
+      Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF263746))),
+    ]),
+  );
+
+  Widget _info(IconData icon, String title, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 11),
+    child: Row(children: [
+      Container(width: 40, height: 40,
+        decoration: BoxDecoration(color: blueSoft, borderRadius: BorderRadius.circular(13)),
+        child: Icon(icon, color: AppColors.blue, size: 20)),
+      const SizedBox(width: 12),
+      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: const TextStyle(fontSize: 12, color: muted)),
+        const SizedBox(height: 3),
+        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF263746))),
+      ])),
+    ]),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -46,103 +102,196 @@ class _AccountScreenState extends State<AccountScreen> {
       _uid = uid;
       _f = uid == null ? null : context.read<Repo>().addresses();
     }
+
     if (!auth.loggedIn) {
-      return SafeArea(
-        child: Center(
-          child: Padding(
+      return Container(
+        color: page,
+        child: SafeArea(child: Center(child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              Text(context.t('loginToSee'), style: const TextStyle(fontSize: 18)),
+              Container(width: 76, height: 76,
+                decoration: const BoxDecoration(color: blueSoft, shape: BoxShape.circle),
+                child: const Icon(Icons.person_outline_rounded, size: 40, color: AppColors.blue)),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (_) => const LoginScreen())),
+              Text(context.t('loginToSee'), textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              SizedBox(width: double.infinity, child: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
                 child: Text(context.t('login')),
+              )),
+            ]),
+          ),
+        ))),
+      );
+    }
+
+    final repo = context.read<Repo>();
+    final metadata = auth.user?.userMetadata ?? {};
+    final displayName = (metadata['full_name'] ?? metadata['name'] ?? '').toString().trim();
+    final emailVerified = auth.user?.emailConfirmedAt?.isNotEmpty ?? false;
+    final phoneVerified = auth.user?.phoneConfirmedAt?.isNotEmpty ?? false;
+    final verified = emailVerified || phoneVerified;
+
+    return Container(
+      color: page,
+      child: SafeArea(child: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+            decoration: BoxDecoration(color: AppColors.blue, borderRadius: BorderRadius.circular(26)),
+            child: Column(children: [
+              Align(alignment: AlignmentDirectional.centerStart,
+                child: Text(context.t('account'), style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600))),
+              const SizedBox(height: 14),
+              Container(width: 88, height: 88, padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white70, width: 2)),
+                child: ClipOval(child: auth.avatarUrl != null
+                  ? NetImage(auth.avatarUrl)
+                  : Container(color: blueSoft, child: const Icon(Icons.person_rounded, color: AppColors.blue, size: 52)))),
+              const SizedBox(height: 12),
+              Text(displayName.isEmpty ? context.t('account') : displayName,
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+              if (auth.email != null) ...[
+                const SizedBox(height: 4),
+                Text(maskEmail(auth.email), style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              ],
+              if (auth.phone != null) ...[
+                const SizedBox(height: 3),
+                Text(maskPhone(auth.phone), textDirection: TextDirection.ltr, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+              ],
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                decoration: BoxDecoration(color: verified ? greenSoft : Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(30)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(verified ? Icons.verified_rounded : Icons.info_outline_rounded, color: verified ? green : Colors.white, size: 17),
+                  const SizedBox(width: 6),
+                  Text(verified ? 'حساب موثوق' : 'الحساب غير موثّق بعد',
+                    style: TextStyle(color: verified ? green : Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+                ]),
               ),
             ]),
           ),
-        ),
-      );
-    }
-    final repo = context.read<Repo>();
-    return SafeArea(
-      child: ListView(padding: const EdgeInsets.all(16), children: [
-        Center(
-          child: SizedBox(
-            width: 96,
-            height: 96,
-            child: ClipOval(
-              child: auth.avatarUrl != null
-                  ? NetImage(auth.avatarUrl)
-                  : Container(
-                      color: AppColors.black,
-                      child: const Icon(Icons.person, color: AppColors.white, size: 56)),
-            ),
+          const SizedBox(height: 20),
+          _section(context.t('accountInfo'), Icons.manage_accounts_outlined),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+            child: Column(children: [
+              if (displayName.isNotEmpty) _info(Icons.person_outline, context.t('name'), displayName),
+              if (auth.email != null) ...[
+                if (displayName.isNotEmpty) const Divider(height: 1, color: line),
+                _info(Icons.email_outlined, context.t('email'), maskEmail(auth.email)),
+              ],
+              if (auth.phone != null) ...[
+                const Divider(height: 1, color: line),
+                _info(Icons.phone_outlined, context.t('phone'), maskPhone(auth.phone)),
+              ],
+            ]),
           ),
-        ),
-        const SizedBox(height: 16),
-        if (auth.email != null)
-          Center(child: Text(maskEmail(auth.email), style: const TextStyle(fontSize: 16))),
-        if (auth.phone != null)
-          Center(
-              child: Text(maskPhone(auth.phone),
-                  textDirection: TextDirection.ltr, style: const TextStyle(fontSize: 16))),
-        const SizedBox(height: 20),
-        const Line(),
-        const SizedBox(height: 12),
-        Text(context.t('addresses'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        FutureBuilder<List<Address>>(
-          future: _f,
-          builder: (context, s) {
-            if (s.connectionState != ConnectionState.done) {
-              return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator(color: AppColors.black)));
-            }
-            if (s.hasError) return ErrorView(error: s.error!, onRetry: _reload);
-            return Column(children: [
-              for (final a in s.data!)
-                Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  padding: const EdgeInsets.all(12),
+          const SizedBox(height: 22),
+          _section(context.t('addresses'), Icons.location_on_outlined),
+          FutureBuilder<List<Address>>(
+            future: _f,
+            builder: (context, s) {
+              if (s.connectionState != ConnectionState.done) return const Padding(
+                padding: EdgeInsets.all(22), child: Center(child: CircularProgressIndicator(color: AppColors.blue)));
+              if (s.hasError) return ErrorView(error: s.error!, onRetry: _reload);
+              final addresses = s.data ?? <Address>[];
+              if (addresses.isEmpty) return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                child: const Column(children: [
+                  Icon(Icons.add_location_alt_outlined, size: 34, color: muted),
+                  SizedBox(height: 8),
+                  Text('لا توجد عناوين مضافة', style: TextStyle(fontWeight: FontWeight.w700)),
+                  SizedBox(height: 4),
+                  Text('أضف عنوانك لتسهيل توصيل طلباتك', style: TextStyle(color: muted, fontSize: 12)),
+                ]),
+              );
+              return Column(children: [
+                for (final a in addresses) Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.black),
-                      borderRadius: BorderRadius.circular(12)),
+                    color: Colors.white, borderRadius: BorderRadius.circular(19),
+                    border: Border.all(color: a.isDefault ? const Color(0xFFBFE5CD) : line)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
-                      Expanded(child: Text(a.title, style: const TextStyle(fontWeight: FontWeight.bold))),
-                      if (a.isDefault)
-                        Text(context.t('defaultBadge'),
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Container(width: 38, height: 38,
+                        decoration: BoxDecoration(color: blueSoft, borderRadius: BorderRadius.circular(12)),
+                        child: const Icon(Icons.location_on_outlined, color: AppColors.blue)),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(a.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15))),
+                      if (a.isDefault) Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: greenSoft, borderRadius: BorderRadius.circular(20)),
+                        child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.check_circle, color: green, size: 14), SizedBox(width: 4),
+                          Text('افتراضي', style: TextStyle(color: green, fontSize: 11, fontWeight: FontWeight.w800)),
+                        ]),
+                      ),
                     ]),
-                    Text('${context.t('landmark')}: ${a.landmark}'),
-                    Row(children: [
-                      if (!a.isDefault)
-                        TextButton(
-                          onPressed: () => _guard(() => repo.setDefaultAddress(a.id)),
-                          child: Text(context.t('setDefault')),
-                        ),
-                      TextButton(
-                        onPressed: () => _guard(() => repo.deleteAddress(a.id)),
-                        child: Text(context.t('delete')),
+                    const SizedBox(height: 9),
+                    Text('${context.t('landmark')}: ${a.landmark}', style: const TextStyle(color: muted, fontSize: 13)),
+                    const SizedBox(height: 10),
+                    Wrap(spacing: 8, runSpacing: 6, children: [
+                      if (!a.isDefault) OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: green, side: const BorderSide(color: green),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                        onPressed: () => _guard(() => repo.setDefaultAddress(a.id)),
+                        icon: const Icon(Icons.check_circle_outline, size: 17),
+                        label: const Text('تعيين كافتراضي'),
+                      ),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(foregroundColor: red),
+                        onPressed: () async {
+                          final yes = await showDialog<bool>(context: context, builder: (d) => AlertDialog(
+                            title: Text(context.t('delete')),
+                            content: const Text('هل تريد حذف هذا العنوان؟'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(d, false), child: Text(context.t('cancel'))),
+                              TextButton(onPressed: () => Navigator.pop(d, true), child: Text(context.t('delete'))),
+                            ],
+                          ));
+                          if (yes == true) _guard(() => repo.deleteAddress(a.id));
+                        },
+                        icon: const Icon(Icons.delete_outline, size: 17),
+                        label: Text(context.t('delete')),
                       ),
                     ]),
                   ]),
                 ),
-            ]);
-          },
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed: () async {
-            final ok = await Navigator.of(context)
-                .push<bool>(MaterialPageRoute(builder: (_) => const AddAddressScreen()));
-            if (ok == true) _reload();
-          },
-          icon: const Icon(Icons.add_location_alt_outlined),
-          label: Text(context.t('addAddress')),
-        ),
-      ]),
+              ]);
+            },
+          ),
+          const SizedBox(height: 6),
+          SizedBox(height: 54, child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: yellow, foregroundColor: const Color(0xFF49370A),
+              elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+            onPressed: () async {
+              final ok = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const AddAddressScreen()));
+              if (ok == true) _reload();
+            },
+            icon: const Icon(Icons.add_location_alt_outlined),
+            label: Text(context.t('addAddress'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          )),
+          const SizedBox(height: 22),
+          SizedBox(height: 52, child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(foregroundColor: red, side: BorderSide(color: red.withValues(alpha: 0.45)),
+              backgroundColor: const Color(0xFFFFF2F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+            onPressed: () => _logout(auth),
+            icon: const Icon(Icons.logout_rounded),
+            label: Text(context.t('logout'), style: const TextStyle(fontWeight: FontWeight.w800)),
+          )),
+        ],
+      )),
     );
   }
 }
