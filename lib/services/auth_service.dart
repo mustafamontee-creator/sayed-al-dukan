@@ -37,8 +37,14 @@ class AuthService extends ChangeNotifier {
 
   Future<void> sendOtp(String e164Phone) => _a.signInWithOtp(phone: e164Phone);
 
+  Future<void> sendEmailOtp(String emailAddress) =>
+      _a.signInWithOtp(email: emailAddress.trim());
+
   Future<void> verifyOtp(String e164Phone, String code) =>
       _a.verifyOTP(phone: e164Phone, token: code, type: OtpType.sms);
+
+  Future<void> verifyEmailOtp(String emailAddress, String code) =>
+      _a.verifyOTP(email: emailAddress.trim(), token: code, type: OtpType.email);
 
   Future<void> signInGoogle() =>
       _a.signInWithOAuth(OAuthProvider.google, redirectTo: AppConfig.oauthRedirect);
