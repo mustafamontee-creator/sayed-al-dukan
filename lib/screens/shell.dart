@@ -31,7 +31,23 @@ class _ShellState extends State<Shell> {
       (Icons.settings_outlined, context.t('settings')),
     ];
     return Scaffold(
-      body: IndexedStack(index: _i, children: _pages),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 420),
+        reverseDuration: const Duration(milliseconds: 320),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) {
+          final slide = Tween<Offset>(
+            begin: const Offset(0.075, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(position: slide, child: child),
+          );
+        },
+        child: KeyedSubtree(key: ValueKey(_i), child: _pages[_i]),
+      ),
       bottomNavigationBar: Container(
         color: AppColors.white,
         child: SafeArea(
@@ -45,7 +61,7 @@ class _ShellState extends State<Shell> {
                   for (var n = 0; n < items.length; n++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => setState(() => _i = n),
+                        onTap: () { if (_i != n) setState(() => _i = n); },
                         child: n == 2
                             ? Center(
                                 child: Container(
