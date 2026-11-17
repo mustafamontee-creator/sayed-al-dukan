@@ -19,7 +19,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _phone = TextEditingController();
   final _code = TextEditingController();
-  bool _sent = false, _busy = false;
+  final _email = TextEditingController();
+  final _emailCode = TextEditingController();
+  bool _sent = false, _emailSent = false, _busy = false;
   String? _err;
   late final AuthService _auth;
   bool _done = false;
@@ -43,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _auth.removeListener(_check);
     _phone.dispose();
     _code.dispose();
+    _email.dispose();
+    _emailCode.dispose();
     super.dispose();
   }
 
@@ -133,6 +137,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextButton(
                       onPressed: () => setState(() => _sent = false),
                       child: Text(context.t('back'))),
+                ],
+                const Divider(height: 28, color: AppColors.black),
+                if (!_emailSent) ...[
+                  TextField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(labelText: context.t('email')),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton(
+                    onPressed: _busy ? null : () => _run(() async {
+                      await _auth.sendEmailOtp(_email.text.trim());
+                      if (mounted) setState(() => _emailSent = true);
+                    }),
+                    child: Text(context.t('emailLogin')),
+                  ),
+                ] else ...[
+                  TextField(
+                    controller: _emailCode,
+                    keyboardType: TextInputType.number,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(labelText: context.t('code')),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton(
+                    onPressed: _busy ? null : () => _run(
+                      () => _auth.verifyEmailOtp(_email.text.trim(), _emailCode.text.trim()),
+                    ),
+                    child: Text(context.t('verify')),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _emailSent = false),
+                    child: Text(context.t('back')),
+                  ),
                 ],
                 if (showGoogle) ...[
                   const SizedBox(height: 12),
