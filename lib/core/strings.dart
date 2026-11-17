@@ -17,7 +17,7 @@ class Strings {
     'search': 'البحث',
     'account': 'الحساب',
     'settings': 'الإعدادات',
-    'about': 'نبذة عن التطبيق',
+    'about': 'نبذة عننا',
     'currency': 'جنيه',
     'minOrder': 'الحد الأدنى للطلب',
     'minQty': 'أقل كمية',
