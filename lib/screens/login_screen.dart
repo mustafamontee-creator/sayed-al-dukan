@@ -18,11 +18,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _phone = TextEditingController();
-  final _code = TextEditingController();
   final _email = TextEditingController();
   final _emailCode = TextEditingController();
-  bool _sent = false, _emailSent = false, _busy = false, _forgotMode = false;
+  bool _emailSent = false, _busy = false, _forgotMode = false;
   String? _err;
   late final AuthService _auth;
   bool _done = false;
@@ -44,41 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void dispose() {
     _auth.removeListener(_check);
-    _phone.dispose();
-    _code.dispose();
     _email.dispose();
     _emailCode.dispose();
     super.dispose();
-  }
-
-  String _e164() {
-    var p = _phone.text.trim().replaceAll(RegExp(r'[\s-]'), '');
-    if (p.startsWith('+')) return p;
-    if (p.startsWith('00')) return '+${p.substring(2)}';
-    if (p.startsWith('0')) p = p.substring(1);
-    return '+20$p'; // Egypt is the only active region
-  }
-
-
-  Future<void> _sendPhone() async {
-    final phone = _e164();
-    if (!RegExp(r'^\+[1-9]\d{7,14}$').hasMatch(phone)) {
-      setState(() => _err = context.t('invalidPhone'));
-      return;
-    }
-    await _run(() async {
-      await _auth.sendOtp(phone);
-      if (mounted) setState(() => _sent = true);
-    });
-  }
-
-  Future<void> _verifyPhone() async {
-    final code = _code.text.trim();
-    if (!RegExp(r'^\d{6}$').hasMatch(code)) {
-      setState(() => _err = context.t('invalidCode'));
-      return;
-    }
-    await _run(() => _auth.verifyOtp(_e164(), code));
   }
 
   Future<void> _sendEmail() async {
