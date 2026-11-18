@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# One-time setup: generates android/ios folders around the existing sources.
+# One-time setup: generates Android/iOS folders around the existing sources.
 set -euo pipefail
 cd "$(dirname "$0")"
 command -v flutter >/dev/null || { echo "Install Flutter first: https://docs.flutter.dev/get-started/install"; exit 1; }
 tmp=$(mktemp -d)
-cp -r lib test assets docs supabase tools pubspec.yaml analysis_options.yaml README.md "$tmp"/
+cp -r lib test assets docs supabase tools pubspec.yaml analysis_options.yaml README.md firebase "$tmp"/
 flutter create --platforms=android,ios --org com.sayedaldukan --project-name sayed_al_dukan .
 rm -rf lib test && cp -r "$tmp/lib" "$tmp/test" .
 cp "$tmp/pubspec.yaml" "$tmp/analysis_options.yaml" "$tmp/README.md" .
+mkdir -p android/app
+cp "$tmp/firebase/google-services.json" android/app/google-services.json
 python3 tools/patch_android.py
 
 # Flutter 3.38 generates Kotlin-DSL Gradle files. Keep the wrapper current.
