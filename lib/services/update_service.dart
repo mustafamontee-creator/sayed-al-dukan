@@ -46,23 +46,38 @@ class UpdateService {
       final request = await client.getUrl(Uri.parse(manifestUrl));
       request.headers.set(HttpHeaders.cacheControlHeader, 'no-cache');
       final response = await request.close();
-      if (response.statusCode != HttpStatus.ok) return null;
+      if (response.statusCode != HttpStatus.ok) {
+        throw HttpException('Update manifest request failed: ${response.statusCode}');
+      }
       final body = await response.transform(utf8.decoder).join();
       final data = jsonDecode(body);
-      if (data is! Map<String, dynamic>) return null;
+      if (data is! Map<String, dynamic>) {
+        throw const FormatException('Invalid update manifest');
+      }
       final update = AppUpdateInfo.fromJson(data);
       final current = await PackageInfo.fromPlatform();
       final installedCode = int.tryParse(current.buildNumber) ?? 0;
       return update.versionCode > installedCode ? update : null;
-    } catch (_) {
-      return null;
     } finally {
       client.close(force: true);
     }
   }
 
   static Future<void> checkAndShow(BuildContext context, {bool showNoUpdate = false}) async {
-    final update = await check();
+    AppUpdateInfo? update;
+    try {
+      update = await check();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(
+          Localizations.localeOf(context).languageCode == 'en'
+              ? 'Could not check for updates. Check your internet connection.'
+              : 'تعذر التحقق من التحديثات. تأكد من اتصال الإنترنت وحاول مرة أخرى.',
+        )),
+      );
+      return;
+    }
     if (!context.mounted) return;
     if (update == null) {
       if (showNoUpdate) {
