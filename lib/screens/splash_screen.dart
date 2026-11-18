@@ -32,12 +32,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _startLogoAnimation() async {
-    final controller = VideoPlayerController.asset(
-      'assets/animation/logo_intro.mp4',
-    );
-    _videoController = controller;
-
+    VideoPlayerController? controller;
     try {
+      controller = VideoPlayerController.asset(
+        'assets/animation/logo_intro_4k120.mp4',
+      );
+      _videoController = controller;
       await controller.initialize();
       if (!mounted) {
         await controller.dispose();
@@ -50,12 +50,35 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {});
       await controller.play();
     } catch (_) {
-      controller.removeListener(_handleVideoProgress);
-      await controller.dispose();
+      if (controller != null) {
+        controller.removeListener(_handleVideoProgress);
+        await controller.dispose();
+      }
       if (!mounted) return;
-      _videoController = null;
-      await Future.delayed(const Duration(milliseconds: 900));
-      if (mounted) _finishIntro();
+      // Fall back to 4K/30fps on devices that cannot decode 4K/120fps.
+      final fallback = VideoPlayerController.asset(
+        'assets/animation/logo_intro_4k30.mp4',
+      );
+      _videoController = fallback;
+      try {
+        await fallback.initialize();
+        if (!mounted) {
+          await fallback.dispose();
+          return;
+        }
+        await fallback.setLooping(false);
+        await fallback.setVolume(0);
+        fallback.addListener(_handleVideoProgress);
+        setState(() {});
+        await fallback.play();
+      } catch (_) {
+        fallback.removeListener(_handleVideoProgress);
+        await fallback.dispose();
+        if (!mounted) return;
+        _videoController = null;
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) _finishIntro();
+      }
     }
   }
 
