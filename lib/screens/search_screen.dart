@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../core/search_util.dart';
 import '../core/strings.dart';
-import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/repo.dart';
 import '../ui/widgets.dart';
