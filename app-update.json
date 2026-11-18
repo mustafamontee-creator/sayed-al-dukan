@@ -1,9 +1,9 @@
 {
-  "version_name": "1.0.10",
-  "version_code": 11,
+  "version_name": "1.0.13",
+  "version_code": 14,
   "title_ar": "يتوفر تحديث جديد لسيد الدكان",
   "title_en": "A new Sayed Al-Dukan update is available",
-  "description_ar": "تحديث جديد لتحسين أداء التطبيق وتطوير تجربة الاستخدام وإصلاح بعض المشاكل.",
-  "description_en": "A new update with performance improvements, a smoother experience, and bug fixes.",
-  "apk_url": ""
+  "description_ar": "إشعارات تحديث محسّنة، والتحقق من توفر الإصدارات الجديدة، وتحسينات عامة.",
+  "description_en": "Improved update notifications, version checking, and general refinements.",
+  "apk_url": "https://github.com/mustafamontee-creator/sayed-al-dukan/releases/latest/download/app-release.apk"
 }
