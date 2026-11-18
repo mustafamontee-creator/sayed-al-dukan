@@ -24,7 +24,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Platform.isAndroid) {
     DartPluginRegistrant.ensureInitialized();
     await Firebase.initializeApp();
-    await AppNotificationService.initialize(onUpdateTap: () async {});
+    await AppNotificationService.initialize(onUpdateTap: () async {}, handleLaunchDetails: false);
     final isNew = await _saveUpdateMessage(message);
     if (isNew) {
       await AppNotificationService.showUpdate(
