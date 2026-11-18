@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../core/strings.dart';
 import '../core/theme.dart';
 import '../services/update_service.dart';
+import '../services/update_notification_store.dart';
+import 'notifications_screen.dart';
 import 'shell.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -22,13 +24,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _continueToApp() async {
-    await UpdateService.checkAndShow(context);
+    await UpdateService.checkAndNotify();
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(PageRouteBuilder(
+    final navigator = Navigator.of(context);
+    navigator.pushReplacement(PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (_, __, ___) => const Shell(),
         transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
       ));
+    if (UpdateNotificationStore.pendingOpenNotifications) {
+      UpdateNotificationStore.pendingOpenNotifications = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigator.push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+      });
+    }
   }
 
   @override
