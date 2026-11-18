@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         RadioListTile<String>(
           contentPadding: EdgeInsets.zero,
-          activeColor: AppColors.black,
+          activeColor: Theme.of(context).colorScheme.primary,
           value: 'en',
           groupValue: s.lang,
           onChanged: (v) => s.setLang(v!),
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           leading: Icon(Icons.support_agent, color: Theme.of(context).colorScheme.onSurface),
           title: Text(s.lang == 'en' ? 'Technical Support' : 'الدعم الفني'),
-          trailing: const Icon(Icons.chevron_right, color: AppColors.black),
+          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const SupportScreen()),
           ),
