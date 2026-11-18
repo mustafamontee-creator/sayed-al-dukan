@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/strings.dart';
-import '../core/theme.dart';
 import '../services/auth_service.dart';
-import '../ui/widgets.dart';
 
 /// Pops with `true` once the customer is signed in, so callers (checkout)
 /// can continue without losing the cart.
@@ -48,16 +46,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _sendEmail() async {
     final email = _email.text.trim();
-    if (!RegExp(r'^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$').hasMatch(email)) {
+    if (!RegExp(r'^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$').hasMatch(email)) {
       setState(() => _err = context.t('invalidEmail'));
       return;
     }
-
     await _run(() async {
       await _auth.sendEmailOtp(email);
-      if (mounted) {
-        setState(() => _emailSent = true);
-      }
+      if (mounted) setState(() => _emailSent = true);
     });
   }
 
@@ -76,199 +71,208 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await action();
     } catch (error) {
-      if (mounted) {
-        setState(() => _err = friendlyError(context, error));
-      }
+      if (mounted) setState(() => _err = friendlyError(context, error));
     } finally {
-      if (mounted) {
-        setState(() => _busy = false);
-      }
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final showApple = Platform.isIOS || Platform.isMacOS;
     final showGoogle = Platform.isAndroid || Platform.isIOS;
-    final children = <Widget>[];
 
-    children.add(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE8E9EB),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFD5D7DA)),
-        ),
-        child: Row(
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Stack(
           children: [
-            const Icon(Icons.phone_rounded, color: Color(0xFF777B80)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                context.t('phoneLogin'),
-                style: const TextStyle(
-                  color: Color(0xFF777B80),
-                  fontWeight: FontWeight.w600,
-                ),
+            PositionedDirectional(
+              top: 2,
+              start: 4,
+              child: IconButton(
+                tooltip: context.t('close'),
+                onPressed: () => Navigator.of(context).pop(false),
+                icon: const Icon(Icons.close_rounded),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD5D7DA),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                context.t('soon'),
-                style: const TextStyle(
-                  color: Color(0xFF55595E),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(24, 48, 24, 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 112,
+                          height: 112,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(26),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(19),
+                            child: Image.asset('assets/images/logo.jpeg', fit: BoxFit.contain),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Text(
+                        context.t('login'),
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        context.t('tagline'),
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      if (!_emailSent) ...[
+                        TextField(
+                          controller: _email,
+                          enabled: !_busy,
+                          keyboardType: TextInputType.emailAddress,
+                          textDirection: TextDirection.ltr,
+                          textInputAction: TextInputAction.done,
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          onSubmitted: (_) => _busy ? null : _sendEmail(),
+                          decoration: InputDecoration(
+                            labelText: context.t('email'),
+                            prefixIcon: const Icon(Icons.mail_outline_rounded),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        FilledButton(
+                          onPressed: _busy ? null : _sendEmail,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Text(context.t('emailLogin')),
+                          ),
+                        ),
+                      ] else ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: colors.outlineVariant),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.mark_email_read_outlined, color: colors.primary),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  context.t('emailLinkSent'),
+                                  style: theme.textTheme.bodyMedium?.copyWith(color: colors.onSurface),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: _busy ? null : _resetEmail,
+                          child: Text(context.t('back')),
+                        ),
+                      ],
+                      if (showGoogle) ...[
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : () => _run(_auth.signInGoogle),
+                          icon: const _GoogleMark(),
+                          label: Text(context.t('google')),
+                        ),
+                      ],
+                      if (showApple) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : () => _run(_auth.signInApple),
+                          icon: const Icon(Icons.apple_rounded, size: 22),
+                          label: Text(context.t('apple')),
+                        ),
+                      ],
+                      const SizedBox(height: 18),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                        decoration: BoxDecoration(
+                          color: colors.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: colors.outlineVariant),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.phone_rounded, color: colors.onSurfaceVariant),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                context.t('phoneLogin'),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainer,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                context.t('soon'),
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_err != null) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.errorContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _err!,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onErrorContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_busy) ...[
+                        const SizedBox(height: 20),
+                        const Center(child: CircularProgressIndicator()),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-    children.add(const Divider(height: 28, color: AppColors.black));
-
-    if (!_emailSent) {
-      children.add(
-        TextField(
-          controller: _email,
-          keyboardType: TextInputType.emailAddress,
-          textDirection: TextDirection.ltr,
-          decoration: InputDecoration(labelText: context.t('email')),
-        ),
-      );
-      children.add(const SizedBox(height: 10));
-      children.add(
-        OutlinedButton(
-          onPressed: _busy ? null : _sendEmail,
-          child: Text(context.t('emailLogin')),
-        ),
-      );
-    } else {
-      children.add(
-        Text(
-          context.t('emailLinkSent'),
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-      );
-      children.add(const SizedBox(height: 10));
-      children.add(
-        TextButton(
-          onPressed: _busy ? null : _resetEmail,
-          child: Text(context.t('back')),
-        ),
-      );
-    }
-
-    if (showGoogle) {
-      children.add(const SizedBox(height: 12));
-      children.add(
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.black,
-            backgroundColor: Colors.white,
-            minimumSize: const Size.fromHeight(48),
-            side: const BorderSide(color: Color(0xFFDADCE0)),
-          ),
-          onPressed: _busy ? null : () => _run(_auth.signInGoogle),
-          icon: const _GoogleMark(),
-          label: Text(context.t('google')),
-        ),
-      );
-    }
-
-    if (showApple) {
-      children.add(const SizedBox(height: 12));
-      children.add(
-        ElevatedButton(
-          onPressed: _busy ? null : () => _run(_auth.signInApple),
-          child: Text(context.t('apple')),
-        ),
-      );
-    }
-
-    if (_err != null) {
-      children.add(
-        Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Text(
-            _err!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.black,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_busy) {
-      children.add(
-        const Padding(
-          padding: EdgeInsets.only(top: 12),
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.black),
-          ),
-        ),
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      body: Column(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Container(
-              width: double.infinity,
-              color: AppColors.blue,
-              child: SafeArea(
-                bottom: false,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Image.asset(
-                        'assets/images/logo.jpeg',
-                        height: 260,
-                      ),
-                    ),
-                    Align(
-                      alignment: AlignmentDirectional.topStart,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          color: AppColors.white,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(false),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 5,
-            child: Container(
-              color: AppColors.white,
-              padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: children,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
