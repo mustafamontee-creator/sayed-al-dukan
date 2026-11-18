@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/strings.dart';
-import '../core/theme.dart';
 import '../services/repo.dart';
 import '../ui/widgets.dart';
 
@@ -113,7 +112,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       point: _pos,
                       width: 44,
                       height: 44,
-                      child: const Icon(
+                      child: Icon(
                         Icons.location_pin,
                         color: Theme.of(context).colorScheme.primary,
                         size: 42,
