@@ -38,6 +38,12 @@ jobs:
           ANDROID_KEY_ALIAS: sayed-al-dukan-release
         run: bash build_apk.sh
 
+      - name: Read update manifest
+        id: update
+        run: |
+          VERSION_NAME="$(jq -r '.version_name' app-update.json)"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -49,9 +55,9 @@ jobs:
         if: github.ref == 'refs/heads/feature/pro-ui-refresh'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.15
+          tag_name: v${{ steps.update.outputs.version_name }}
           target_commitish: ${{ github.sha }}
-          name: Sayed Al-Dukan 1.0.15
+          name: Sayed Al-Dukan ${{ steps.update.outputs.version_name }}
           files: build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
 
