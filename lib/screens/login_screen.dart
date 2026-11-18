@@ -19,8 +19,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
-  final _emailCode = TextEditingController();
-  bool _emailSent = false, _busy = false, _forgotMode = false;
+  bool _emailSent = false, _busy = false;
   String? _err;
   late final AuthService _auth;
   bool _done = false;
@@ -43,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _auth.removeListener(_check);
     _email.dispose();
-    _emailCode.dispose();
     super.dispose();
   }
 
@@ -57,15 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
       await _auth.sendEmailOtp(email);
       if (mounted) setState(() => _emailSent = true);
     });
-  }
-
-  Future<void> _verifyEmail() async {
-    final code = _emailCode.text.trim();
-    if (!RegExp(r'^\d{6}$').hasMatch(code)) {
-      setState(() => _err = context.t('invalidCode'));
-      return;
-    }
-    await _run(() => _auth.verifyEmailOtp(_email.text.trim(), code));
   }
 
   Future<void> _run(Future<void> Function() f) async {
@@ -154,35 +143,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ]),
                 ),
                 const Divider(height: 28, color: AppColors.black),
-                if (!_forgotMode && !_emailSent) ...[
-                  TextField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    textDirection: TextDirection.ltr,
-                    decoration: InputDecoration(labelText: context.t('email')),
-                  ),
+                if (!_emailSent) ...[
+                  TextField(controller: _email, keyboardType: TextInputType.emailAddress, textDirection: TextDirection.ltr, decoration: InputDecoration(labelText: context.t('email'))),
                   const SizedBox(height: 10),
-                  OutlinedButton(
-                    onPressed: _busy ? null : _sendEmail,
-                    child: Text(context.t('emailLogin')),
-                  ),
-                 ] else if (!_forgotMode && _emailSent) ...[
-                  TextField(
-                    controller: _emailCode,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-                    textDirection: TextDirection.ltr,
-                    decoration: InputDecoration(labelText: context.t('code')),
-                  ),
+                  OutlinedButton(onPressed: _busy ? null : _sendEmail, child: Text(context.t('emailLogin'))),
+                ] else ...[
+                  Text(context.t('emailLinkSent'), textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
-                  OutlinedButton(
-                    onPressed: _busy ? null : _verifyEmail,
-                    child: Text(context.t('verify')),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => _emailSent = false),
-                    child: Text(context.t('back')),
-                  ),
+                  TextButton(onPressed: _busy ? null : () => setState(() { _emailSent = false; _err = null; }), child: Text(context.t('back'))),
                 ],
                 if (showGoogle) ...[
                   const SizedBox(height: 12),
@@ -192,56 +160,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: const _GoogleMark(),
                     label: Text(context.t('google')),
                   ),
-                  TextButton(
-                    onPressed: _busy ? null : () => setState(() {
-                      _forgotMode = !_forgotMode;
-                      _emailSent = false;
-                      _email.clear();
-                      _emailCode.clear();
-                      _err = null;
-                    }),
-                    child: Text(
-                      context.t('forgotPassword'),
-                      style: const TextStyle(fontSize: 12, decoration: TextDecoration.underline),
-                    ),
-                  ),
-                ],
-                if (_forgotMode) ...[
-                  TextField(
-                    controller: _email,
-                    keyboardType: TextInputType.emailAddress,
-                    textDirection: TextDirection.ltr,
-                    decoration: InputDecoration(labelText: context.t('email')),
-                  ),
-                  const SizedBox(height: 8),
-                  if (!_emailSent)
-                    OutlinedButton(
-                      onPressed: _busy ? null : _sendEmail,
-                      child: Text(context.t('sendCode')),
-                    )
-                  else ...[
-                    TextField(
-                      controller: _emailCode,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-                      textDirection: TextDirection.ltr,
-                      decoration: InputDecoration(labelText: context.t('code')),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: _busy ? null : _verifyEmail,
-                      child: Text(context.t('verify')),
-                    ),
-                  ],
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _forgotMode = false;
-                      _emailSent = false;
-                      _err = null;
-                    }),
-                    child: Text(context.t('back')),
-                  ),
-                ],
                 if (showApple) ...[
                   const SizedBox(height: 12),
                   ElevatedButton(
