@@ -44,7 +44,6 @@ class AppNotificationService {
   }
 
   static Future<void> showUpdate({
-    String? title,
     String? body,
   }) async {
     final detailsText = body?.trim().isNotEmpty == true
