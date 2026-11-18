@@ -20,7 +20,11 @@ String friendlyError(BuildContext c, Object e) {
     if (m.contains('product_unavailable')) return c.t('errUnavailable');
     return c.t('errGeneric');
   }
-  if (e is AuthException) return e.message;
+  if (e is AuthException) {
+    final message = e.message.toLowerCase();
+    if (message.contains('over_email_send_rate_limit') || message.contains('email rate limit exceeded') || message.contains('rate limit')) return c.t('errEmailRateLimit');
+    return e.message;
+  }
   return c.t('errGeneric');
 }
 
