@@ -87,8 +87,8 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
                         child: Text(
                           context.t('sharaftuna'),
                           textDirection: Directionality.of(context),
-                          style: const TextStyle(
-                            color: AppColors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -102,8 +102,8 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
                           textAlign: TextAlign.end,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -213,7 +213,7 @@ class _Tile extends StatelessWidget {
       child: Container(
         height: height,
         decoration: BoxDecoration(
-            color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+            color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(child: SizedBox(width: double.infinity, child: NetImage(p.cover))),
@@ -223,8 +223,8 @@ class _Tile extends StatelessWidget {
               Text(p.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text(money(context, p.unitPrice), style: const TextStyle(fontSize: 14)),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Theme.of(context).colorScheme.onSurface)),
+              Text(money(context, p.unitPrice), style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ]),
           ),
         ]),
