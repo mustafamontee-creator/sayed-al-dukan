@@ -10,6 +10,7 @@ class UpdateNotificationStore {
   static const _lastAnnouncedKey = 'last_announced_update_version_code';
   static const _unreadKey = 'has_unread_update_notification';
   static final ValueNotifier<bool> unread = ValueNotifier<bool>(false);
+  static bool pendingOpenNotifications = false;
 
   static Future<void> refreshUnread() async {
     final prefs = await SharedPreferences.getInstance();
