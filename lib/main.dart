@@ -11,18 +11,40 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config.dart';
 import 'core/theme.dart';
 import 'screens/splash_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'services/app_notification_service.dart';
 import 'services/auth_service.dart';
 import 'services/cart_service.dart';
 import 'services/repo.dart';
 import 'services/settings_controller.dart';
-import 'services/update_service.dart';
+import 'services/update_notification_store.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Platform.isAndroid) {
     await Firebase.initializeApp();
+    await _saveUpdateMessage(message);
   }
+}
+
+Future<bool> _saveUpdateMessage(RemoteMessage message) async {
+  if (message.data['type'] != 'app_update') return false;
+  return UpdateNotificationStore.save(
+    versionName: (message.data['version_name'] ?? '').toString(),
+    versionCode: int.tryParse((message.data['version_code'] ?? '').toString()) ?? 0,
+    descriptionAr: (message.data['description_ar'] ?? '').toString(),
+    descriptionEn: (message.data['description_en'] ?? '').toString(),
+  );
+}
+
+void _openNotifications() {
+  final navigator = SayedApp.navigatorKey.currentState;
+  if (navigator == null) {
+    UpdateNotificationStore.pendingOpenNotifications = true;
+    return;
+  }
+  UpdateNotificationStore.markRead();
+  navigator.push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
 }
 
 Future<void> main() async {
@@ -31,6 +53,7 @@ Future<void> main() async {
     await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
   }
   final prefs = await SharedPreferences.getInstance();
+  await UpdateNotificationStore.refreshUnread();
   final settings = SettingsController(prefs);
   final repo = Repo(prefs);
   final cart = CartService(prefs)..repo = repo;
@@ -39,8 +62,7 @@ Future<void> main() async {
   auth.init();
 
   await AppNotificationService.initialize(onUpdateTap: () async {
-    final context = SayedApp.navigatorKey.currentContext;
-    if (context != null) await UpdateService.checkAndShow(context);
+    _openNotifications();
   });
 
   runApp(MultiProvider(
@@ -62,7 +84,8 @@ Future<void> main() async {
     await messaging.subscribeToTopic('app_updates');
 
     FirebaseMessaging.onMessage.listen((message) async {
-      if (message.data['type'] == 'app_update') {
+      final isNew = await _saveUpdateMessage(message);
+      if (isNew) {
         await AppNotificationService.showUpdate(
           title: message.notification?.title,
           body: message.notification?.body,
@@ -71,18 +94,14 @@ Future<void> main() async {
     });
     FirebaseMessaging.onMessageOpenedApp.listen((message) async {
       if (message.data['type'] == 'app_update') {
-        final context = SayedApp.navigatorKey.currentContext;
-        if (context != null) {
-          await UpdateService.checkAndShow(context);
-        }
+        await _saveUpdateMessage(message);
+        _openNotifications();
       }
     });
     final initialMessage = await messaging.getInitialMessage();
     if (initialMessage?.data['type'] == 'app_update') {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final context = SayedApp.navigatorKey.currentContext;
-        if (context != null) UpdateService.checkAndShow(context);
-      });
+      await _saveUpdateMessage(initialMessage!);
+      UpdateNotificationStore.pendingOpenNotifications = true;
     }
   }
 }
