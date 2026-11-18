@@ -98,7 +98,7 @@ class _ProductScreenState extends State<ProductScreen> {
             if (s.connectionState != ConnectionState.done) {
               return const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator(color: AppColors.black)));
+                  child: Center(child: CircularProgressIndicator()));
             }
             if (s.hasError || s.data!.isEmpty) {
               return Padding(
@@ -138,10 +138,10 @@ class _RoundBtn extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-              color: onTap == null ? AppColors.white : AppColors.black,
-              border: Border.all(color: AppColors.black, width: 2),
+              color: onTap == null ? Theme.of(context).colorScheme.surfaceContainerHighest : Theme.of(context).colorScheme.primary,
+              border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1.5),
               shape: BoxShape.circle),
-          child: Icon(icon, color: onTap == null ? AppColors.black : AppColors.white),
+          child: Icon(icon, color: onTap == null ? Theme.of(context).colorScheme.onSurfaceVariant : Theme.of(context).colorScheme.onPrimary),
         ),
       );
 }
