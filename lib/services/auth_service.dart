@@ -40,7 +40,11 @@ class AuthService extends ChangeNotifier {
 
   // Allow a new customer to create an account through email OTP.
   Future<void> sendEmailOtp(String emailAddress) =>
-      _a.signInWithOtp(email: emailAddress.trim(), shouldCreateUser: true);
+      _a.signInWithOtp(
+        email: emailAddress.trim(),
+        shouldCreateUser: true,
+        emailRedirectTo: AppConfig.oauthRedirect,
+      );
 
   Future<void> verifyOtp(String e164Phone, String code) =>
       _a.verifyOTP(phone: e164Phone, token: code, type: OtpType.sms);
