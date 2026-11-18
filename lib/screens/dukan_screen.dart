@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../core/strings.dart';
@@ -74,46 +75,19 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
                     children: [_CartButton(), _NotificationButton()],
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    textDirection: TextDirection.ltr,
-                    children: [
-                      SizedBox(
-                        width: 88,
-                        height: 88,
-                        child: Image.asset(
-                          'assets/images/sayed_logo.png',
-                          fit: BoxFit.contain,
-                          alignment: Alignment.center,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          context.t('sharaftuna'),
-                          textDirection: Directionality.of(context),
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          context.t('welcome'),
-                          textDirection: Directionality.of(context),
-                          textAlign: TextAlign.end,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Container(
+                    width: double.infinity,
+                    height: 104,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.blue,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    child: SvgPicture.asset(
+                      'assets/brand/full_logo.svg',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ],
               ),

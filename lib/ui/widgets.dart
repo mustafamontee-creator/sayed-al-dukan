@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/config.dart';
@@ -60,26 +61,67 @@ class ErrorView extends StatelessWidget {
 }
 
 /// Uses the ORIGINAL supplied artwork + the exact text requested.
-class NotFoundView extends StatelessWidget {
-  const NotFoundView({super.key, this.onDark = false});
+class BrandedEmptyView extends StatelessWidget {
+  const BrandedEmptyView({
+    super.key,
+    required this.message,
+    this.onDark = false,
+  });
+
+  final String message;
   final bool onDark;
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Center(
-      child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Image.asset('assets/images/not_found.png', width: 240),
-          const SizedBox(height: 12),
-          Text(context.t('notFound'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 116,
+              height: 116,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: onDark ? const Color(0xFF315F8C) : colors.primary,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                'assets/brand/mark.svg',
+                width: 76,
+                height: 76,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              message,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: onDark ? colors.onPrimary : colors.onSurface)),
-        ]),
+                fontSize: 19,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
+                color: onDark ? colors.onPrimary : colors.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class NotFoundView extends StatelessWidget {
+  const NotFoundView({super.key, this.onDark = false});
+  final bool onDark;
+
+  @override
+  Widget build(BuildContext context) => BrandedEmptyView(
+        message: context.t('notFound'),
+        onDark: onDark,
+      );
 }
 
 class NetImage extends StatelessWidget {

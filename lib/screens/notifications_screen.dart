@@ -174,16 +174,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      const SizedBox(height: 130),
-                      Icon(Icons.notifications_none, size: 58, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                      const SizedBox(height: 14),
-                      Center(
-                        child: Text(
-                          context.t('noNotifications'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                        ),
-                      ),
+                      const SizedBox(height: 64),
+                      BrandedEmptyView(message: context.t('notFound')),
+                      const SizedBox(height: 64),
                     ],
                   ),
                 );
