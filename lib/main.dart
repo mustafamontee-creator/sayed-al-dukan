@@ -22,8 +22,16 @@ import 'services/update_notification_store.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Platform.isAndroid) {
+    DartPluginRegistrant.ensureInitialized();
     await Firebase.initializeApp();
-    await _saveUpdateMessage(message);
+    await AppNotificationService.initialize(onUpdateTap: () async {});
+    final isNew = await _saveUpdateMessage(message);
+    if (isNew) {
+      await AppNotificationService.showUpdate(
+        title: (message.data['title_ar'] ?? '').toString(),
+        body: (message.data['body_ar'] ?? '').toString(),
+      );
+    }
   }
 }
 
@@ -37,13 +45,13 @@ Future<bool> _saveUpdateMessage(RemoteMessage message) async {
   );
 }
 
-void _openNotifications() {
+Future<void> _openNotifications() async {
   final navigator = SayedApp.navigatorKey.currentState;
   if (navigator == null) {
     UpdateNotificationStore.pendingOpenNotifications = true;
     return;
   }
-  UpdateNotificationStore.markRead();
+  await UpdateNotificationStore.markRead();
   navigator.push(MaterialPageRoute(builder: (_) => const NotificationsScreen()));
 }
 
@@ -61,9 +69,7 @@ Future<void> main() async {
   final auth = AuthService()..onSignedIn = cart.mergeFromServer;
   auth.init();
 
-  await AppNotificationService.initialize(onUpdateTap: () async {
-    _openNotifications();
-  });
+  await AppNotificationService.initialize(onUpdateTap: _openNotifications);
 
   runApp(MultiProvider(
     providers: [
@@ -87,8 +93,8 @@ Future<void> main() async {
       final isNew = await _saveUpdateMessage(message);
       if (isNew) {
         await AppNotificationService.showUpdate(
-          title: message.notification?.title,
-          body: message.notification?.body,
+          title: (message.data['title_ar'] ?? '').toString(),
+          body: (message.data['body_ar'] ?? '').toString(),
         );
       }
     });
