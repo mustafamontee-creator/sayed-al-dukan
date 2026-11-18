@@ -95,7 +95,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 decoration: InputDecoration(labelText: context.t('confirmPassword')),
               ),
               const SizedBox(height: 8),
-              Text(context.t('passwordHint'), style: const TextStyle(fontSize: 12, color: mutedColor)),
+              Text(context.t('passwordHint'), style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ],
           ),
           actions: [
@@ -205,7 +205,7 @@ class _AccountScreenState extends State<AccountScreen> {
             decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(24)),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Container(width: 76, height: 76,
-                decoration: const BoxDecoration(color: blueSoftColor, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: blueSoftColor, shape: BoxShape.circle),
                 child: const Icon(Icons.person_outline_rounded, size: 40, color: AppColors.blue)),
               const SizedBox(height: 16),
               Text(context.t('loginToSee'), textAlign: TextAlign.center,
@@ -277,7 +277,7 @@ class _AccountScreenState extends State<AccountScreen> {
             child: Column(children: [
               if (displayName.isNotEmpty) _info(Icons.person_outline, context.t('name'), displayName),
               if (auth.email != null) ...[
-                if (displayName.isNotEmpty) const Divider(height: 1, color: lineColor),
+                if (displayName.isNotEmpty) Divider(height: 1, color: lineColor),
                 _info(Icons.email_outlined, context.t('email'), maskEmail(auth.email)),
               ],
               if (auth.phone != null) ...[
@@ -330,11 +330,11 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ]),
                     const SizedBox(height: 9),
-                    Text('${context.t('landmark')}: ${a.landmark}', style: const TextStyle(color: mutedColor, fontSize: 13)),
+                    Text('${context.t('landmark')}: ${a.landmark}', style: TextStyle(color: mutedColor, fontSize: 13)),
                     const SizedBox(height: 10),
                     Wrap(spacing: 8, runSpacing: 6, children: [
                       if (!a.isDefault) OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(foregroundColor: green, side: const BorderSide(color: greenColor),
+                        style: OutlinedButton.styleFrom(foregroundColor: greenColor, side: BorderSide(color: greenColor),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         onPressed: () => _guard(() => repo.setDefaultAddress(a.id)),
                         icon: const Icon(Icons.check_circle_outline, size: 17),
