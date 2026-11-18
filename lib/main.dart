@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config.dart';
 import 'core/theme.dart';
 import 'screens/splash_screen.dart';
+import 'services/app_notification_service.dart';
 import 'services/auth_service.dart';
 import 'services/cart_service.dart';
 import 'services/repo.dart';
@@ -37,6 +38,11 @@ Future<void> main() async {
   final auth = AuthService()..onSignedIn = cart.mergeFromServer;
   auth.init();
 
+  await AppNotificationService.initialize(onUpdateTap: () async {
+    final context = SayedApp.navigatorKey.currentContext;
+    if (context != null) await UpdateService.checkAndShow(context);
+  });
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: settings),
@@ -57,10 +63,10 @@ Future<void> main() async {
 
     FirebaseMessaging.onMessage.listen((message) async {
       if (message.data['type'] == 'app_update') {
-        final context = SayedApp.navigatorKey.currentContext;
-        if (context != null) {
-          await UpdateService.checkAndShow(context);
-        }
+        await AppNotificationService.showUpdate(
+          title: message.notification?.title,
+          body: message.notification?.body,
+        );
       }
     });
     FirebaseMessaging.onMessageOpenedApp.listen((message) async {
