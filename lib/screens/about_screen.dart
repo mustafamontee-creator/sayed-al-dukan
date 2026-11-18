@@ -87,7 +87,7 @@ class _AboutScreenState extends State<AboutScreen> {
         const SizedBox(height: 8),
         Text(en ? 'Sayed Al-Dukan app developer' : 'تطوير تطبيق سيد الدكان'),
         TextButton.icon(onPressed: _openInstagram, icon: const Icon(Icons.camera_alt_outlined), label: const Text('@msvux')),
-        const Divider(color: AppColors.black),
+        Divider(color: Theme.of(context).dividerColor),
         Text(en ? 'Rate the app' : 'قيّم التطبيق', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Center(
