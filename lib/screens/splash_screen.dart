@@ -47,6 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       await controller.setLooping(false);
       await controller.setVolume(0);
       controller.addListener(_handleVideoProgress);
+      setState(() {});
       await controller.play();
     } catch (_) {
       controller.removeListener(_handleVideoProgress);
