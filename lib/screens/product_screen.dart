@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/strings.dart';
-import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/cart_service.dart';
 import '../services/repo.dart';
