@@ -3,10 +3,11 @@ name: Build Android APK
 on:
   push:
     branches: [main, feature/pro-ui-refresh]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -34,15 +35,22 @@ jobs:
       - name: Analyze, test and build signed APK
         env:
           SUPABASE_URL: https://vusjswnvqbxspdgbekxc.supabase.co
-          SUPABASE_PUBLISHABLE_KEY: sb_publishable_-FnAVg38wgT94t6kbSuT3A_mqmgs5mz
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_-FnAVg38wgT94t6kbSuT3A_mqmgs5mz' }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: sayed-al-dukan-release
         run: bash build_apk.sh
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sayed-al-dukan-android-v${{ github.sha }}
+          name: sayed-al-dukan-android-${{ github.sha }}
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+
+      - name: Publish APK to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
