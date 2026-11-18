@@ -8,6 +8,7 @@ manifest = Path(sys.argv[1] if len(sys.argv) > 1 else "android/app/src/main/Andr
 s = manifest.read_text(encoding="utf-8")
 perms = [
     "android.permission.INTERNET",
+    "android.permission.POST_NOTIFICATIONS",
     "android.permission.REQUEST_INSTALL_PACKAGES",
     "android.permission.ACCESS_FINE_LOCATION",
     "android.permission.ACCESS_COARSE_LOCATION",
