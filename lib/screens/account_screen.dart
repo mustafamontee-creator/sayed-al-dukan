@@ -21,14 +21,8 @@ class _AccountScreenState extends State<AccountScreen> {
   Future<List<Address>>? _f;
   String? _uid;
 
-  static const page = Color(0xFFF3F7FA);
-  static const blueSoft = Color(0xFFE8F0F7);
-  static const green = Color(0xFF238653);
-  static const greenSoft = Color(0xFFE7F5EC);
   static const yellow = Color(0xFFFFC94A);
   static const red = Color(0xFFD94747);
-  static const line = Color(0xFFE7EDF2);
-  static const muted = Color(0xFF718096);
 
   void _reload() => setState(() => _f = context.read<Repo>().addresses());
 
@@ -101,7 +95,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 decoration: InputDecoration(labelText: context.t('confirmPassword')),
               ),
               const SizedBox(height: 8),
-              Text(context.t('passwordHint'), style: const TextStyle(fontSize: 12, color: muted)),
+              Text(context.t('passwordHint'), style: const TextStyle(fontSize: 12, color: mutedColor)),
             ],
           ),
           actions: [
@@ -148,32 +142,51 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
-  Widget _section(String title, IconData icon) => Padding(
-    padding: const EdgeInsets.only(bottom: 11),
-    child: Row(children: [
-      Icon(icon, size: 19, color: AppColors.blue),
-      const SizedBox(width: 8),
-      Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF263746))),
-    ]),
-  );
+  Widget _section(String title, IconData icon) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 11),
+      child: Row(children: [
+        Icon(icon, size: 19, color: colors.secondary),
+        const SizedBox(width: 8),
+        Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: colors.onSurface)),
+      ]),
+    );
+  }
 
-  Widget _info(IconData icon, String title, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 11),
-    child: Row(children: [
-      Container(width: 40, height: 40,
-        decoration: BoxDecoration(color: blueSoft, borderRadius: BorderRadius.circular(13)),
-        child: Icon(icon, color: AppColors.blue, size: 20)),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 12, color: muted)),
-        const SizedBox(height: 3),
-        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF263746))),
-      ])),
-    ]),
-  );
+  Widget _info(IconData icon, String title, String value) {
+    final colors = Theme.of(context).colorScheme;
+    final soft = Theme.of(context).brightness == Brightness.dark
+        ? colors.surfaceContainerHigh
+        : const Color(0xFFE8F0F7);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 11),
+      child: Row(children: [
+        Container(width: 40, height: 40,
+          decoration: BoxDecoration(color: soft, borderRadius: BorderRadius.circular(13)),
+          child: Icon(icon, color: colors.secondary, size: 20)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title, style: TextStyle(fontSize: 12, color: colors.onSurfaceVariant)),
+          const SizedBox(height: 3),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: colors.onSurface)),
+        ])),
+      ]),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final pageColor = theme.scaffoldBackgroundColor;
+    final cardColor = colors.surface;
+    final blueSoftColor = isDark ? colors.surfaceContainerHigh : const Color(0xFFE8F0F7);
+    final greenColor = isDark ? const Color(0xFF8AD5A8) : const Color(0xFF238653);
+    final greenSoftColor = isDark ? const Color(0xFF244536) : const Color(0xFFE7F5EC);
+    final lineColor = colors.outlineVariant;
+    final mutedColor = colors.onSurfaceVariant;
     final auth = context.watch<AuthService>();
     final uid = auth.user?.id;
     if (uid != _uid) {
@@ -183,20 +196,20 @@ class _AccountScreenState extends State<AccountScreen> {
 
     if (!auth.loggedIn) {
       return Container(
-        color: page,
+        color: pageColor,
         child: SafeArea(child: Center(child: Padding(
           padding: const EdgeInsets.all(24),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+            decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(24)),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Container(width: 76, height: 76,
-                decoration: const BoxDecoration(color: blueSoft, shape: BoxShape.circle),
+                decoration: const BoxDecoration(color: blueSoftColor, shape: BoxShape.circle),
                 child: const Icon(Icons.person_outline_rounded, size: 40, color: AppColors.blue)),
               const SizedBox(height: 16),
               Text(context.t('loginToSee'), textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: colors.onSurface)),
               const SizedBox(height: 16),
               SizedBox(width: double.infinity, child: ElevatedButton(
                 onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen())),
@@ -216,7 +229,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final verified = emailVerified || phoneVerified;
 
     return Container(
-      color: page,
+      color: pageColor,
       child: SafeArea(child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         children: [
@@ -231,7 +244,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white70, width: 2)),
                 child: ClipOval(child: auth.avatarUrl != null
                   ? NetImage(auth.avatarUrl)
-                  : Container(color: blueSoft, child: const Icon(Icons.person_rounded, color: AppColors.blue, size: 52)))),
+                  : Container(color: blueSoftColor, child: const Icon(Icons.person_rounded, color: AppColors.blue, size: 52)))),
               const SizedBox(height: 12),
               Text(displayName.isEmpty ? context.t('account') : displayName,
                 style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -246,12 +259,12 @@ class _AccountScreenState extends State<AccountScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                decoration: BoxDecoration(color: verified ? greenSoft : Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(30)),
+                decoration: BoxDecoration(color: verified ? greenSoftColor : Colors.white.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(30)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(verified ? Icons.verified_rounded : Icons.info_outline_rounded, color: verified ? green : Colors.white, size: 17),
+                  Icon(verified ? Icons.verified_rounded : Icons.info_outline_rounded, color: verified ? greenColor : Colors.white, size: 17),
                   const SizedBox(width: 6),
                   Text(verified ? 'حساب موثوق' : 'الحساب غير موثّق بعد',
-                    style: TextStyle(color: verified ? green : Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+                    style: TextStyle(color: verified ? greenColor : Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
                 ]),
               ),
             ]),
@@ -260,15 +273,15 @@ class _AccountScreenState extends State<AccountScreen> {
           _section(context.t('accountInfo'), Icons.manage_accounts_outlined),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20)),
             child: Column(children: [
               if (displayName.isNotEmpty) _info(Icons.person_outline, context.t('name'), displayName),
               if (auth.email != null) ...[
-                if (displayName.isNotEmpty) const Divider(height: 1, color: line),
+                if (displayName.isNotEmpty) const Divider(height: 1, color: lineColor),
                 _info(Icons.email_outlined, context.t('email'), maskEmail(auth.email)),
               ],
               if (auth.phone != null) ...[
-                const Divider(height: 1, color: line),
+                const Divider(height: 1, color: lineColor),
                 _info(Icons.phone_outlined, context.t('phone'), maskPhone(auth.phone)),
               ],
             ]),
@@ -284,13 +297,13 @@ class _AccountScreenState extends State<AccountScreen> {
               final addresses = s.data ?? <Address>[];
               if (addresses.isEmpty) return Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20)),
                 child: const Column(children: [
-                  Icon(Icons.add_location_alt_outlined, size: 34, color: muted),
+                  Icon(Icons.add_location_alt_outlined, size: 34, color: mutedColor),
                   SizedBox(height: 8),
                   Text('لا توجد عناوين مضافة', style: TextStyle(fontWeight: FontWeight.w700)),
                   SizedBox(height: 4),
-                  Text('أضف عنوانك لتسهيل توصيل طلباتك', style: TextStyle(color: muted, fontSize: 12)),
+                  Text('أضف عنوانك لتسهيل توصيل طلباتك', style: TextStyle(color: mutedColor, fontSize: 12)),
                 ]),
               );
               return Column(children: [
@@ -298,30 +311,30 @@ class _AccountScreenState extends State<AccountScreen> {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(19),
-                    border: Border.all(color: a.isDefault ? const Color(0xFFBFE5CD) : line)),
+                    color: cardColor, borderRadius: BorderRadius.circular(19),
+                    border: Border.all(color: a.isDefault ? const Color(0xFFBFE5CD) : lineColor)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Row(children: [
                       Container(width: 38, height: 38,
-                        decoration: BoxDecoration(color: blueSoft, borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(color: blueSoftColor, borderRadius: BorderRadius.circular(12)),
                         child: const Icon(Icons.location_on_outlined, color: AppColors.blue)),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(a.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15))),
+                      Expanded(child: Text(a.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: colors.onSurface))),
                       if (a.isDefault) Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: greenSoft, borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(color: greenSoftColor, borderRadius: BorderRadius.circular(20)),
                         child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.check_circle, color: green, size: 14), SizedBox(width: 4),
-                          Text('افتراضي', style: TextStyle(color: green, fontSize: 11, fontWeight: FontWeight.w800)),
+                          Icon(Icons.check_circle, color: greenColor, size: 14), SizedBox(width: 4),
+                          Text('افتراضي', style: TextStyle(color: greenColor, fontSize: 11, fontWeight: FontWeight.w800)),
                         ]),
                       ),
                     ]),
                     const SizedBox(height: 9),
-                    Text('${context.t('landmark')}: ${a.landmark}', style: const TextStyle(color: muted, fontSize: 13)),
+                    Text('${context.t('landmark')}: ${a.landmark}', style: const TextStyle(color: mutedColor, fontSize: 13)),
                     const SizedBox(height: 10),
                     Wrap(spacing: 8, runSpacing: 6, children: [
                       if (!a.isDefault) OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(foregroundColor: green, side: const BorderSide(color: green),
+                        style: OutlinedButton.styleFrom(foregroundColor: green, side: const BorderSide(color: greenColor),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         onPressed: () => _guard(() => repo.setDefaultAddress(a.id)),
                         icon: const Icon(Icons.check_circle_outline, size: 17),
@@ -365,9 +378,9 @@ class _AccountScreenState extends State<AccountScreen> {
             height: 52,
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.blue,
-                backgroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFFD8E4ED)),
+                foregroundColor: colors.secondary,
+                backgroundColor: cardColor,
+                side: BorderSide(color: colors.outlineVariant),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               ),
               onPressed: () => _changePassword(auth),
@@ -378,7 +391,7 @@ class _AccountScreenState extends State<AccountScreen> {
           const SizedBox(height: 22),
           SizedBox(height: 52, child: OutlinedButton.icon(
             style: OutlinedButton.styleFrom(foregroundColor: red, side: BorderSide(color: red.withValues(alpha: 0.45)),
-              backgroundColor: const Color(0xFFFFF2F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+              backgroundColor: isDark ? const Color(0xFF3B2525) : const Color(0xFFFFF2F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
             onPressed: () => _logout(auth),
             icon: const Icon(Icons.logout_rounded),
             label: Text(context.t('logout'), style: const TextStyle(fontWeight: FontWeight.w800)),
