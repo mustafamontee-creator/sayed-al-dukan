@@ -30,7 +30,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     if (isNew) {
       await AppNotificationService.showUpdate(
         title: (message.data['title_ar'] ?? '').toString(),
-        body: (message.data['body_ar'] ?? '').toString(),
+        body: (message.data['description_ar'] ?? '').toString(),
       );
     }
   }
@@ -95,7 +95,7 @@ Future<void> main() async {
       if (isNew) {
         await AppNotificationService.showUpdate(
           title: (message.data['title_ar'] ?? '').toString(),
-          body: (message.data['body_ar'] ?? '').toString(),
+          body: (message.data['description_ar'] ?? '').toString(),
         );
       }
     });
