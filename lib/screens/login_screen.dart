@@ -160,6 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: const _GoogleMark(),
                     label: Text(context.t('google')),
                   ),
+                ],
                 if (showApple) ...[
                   const SizedBox(height: 12),
                   ElevatedButton(
