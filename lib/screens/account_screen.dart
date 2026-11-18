@@ -281,7 +281,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 _info(Icons.email_outlined, context.t('email'), maskEmail(auth.email)),
               ],
               if (auth.phone != null) ...[
-                const Divider(height: 1, color: lineColor),
+                Divider(height: 1, color: lineColor),
                 _info(Icons.phone_outlined, context.t('phone'), maskPhone(auth.phone)),
               ],
             ]),
