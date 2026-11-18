@@ -29,7 +29,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final isNew = await _saveUpdateMessage(message);
     if (isNew) {
       await AppNotificationService.showUpdate(
-        title: (message.data['title_ar'] ?? '').toString(),
         body: (message.data['description_ar'] ?? '').toString(),
       );
     }
@@ -38,12 +37,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 Future<bool> _saveUpdateMessage(RemoteMessage message) async {
   if (message.data['type'] != 'app_update') return false;
-  return UpdateNotificationStore.save(
-    versionName: (message.data['version_name'] ?? '').toString(),
-    versionCode: int.tryParse((message.data['version_code'] ?? '').toString()) ?? 0,
-    descriptionAr: (message.data['description_ar'] ?? '').toString(),
-    descriptionEn: (message.data['description_en'] ?? '').toString(),
-  );
+  try {
+    return await UpdateNotificationStore.save(
+      versionName: (message.data['version_name'] ?? '').toString(),
+      versionCode: int.tryParse((message.data['version_code'] ?? '').toString()) ?? 0,
+      descriptionAr: (message.data['description_ar'] ?? '').toString(),
+      descriptionEn: (message.data['description_en'] ?? '').toString(),
+    );
+  } catch (error) {
+    debugPrint('Could not save update notification: $error');
+    return false;
+  }
 }
 
 Future<void> _openNotifications() async {
@@ -84,31 +88,35 @@ Future<void> main() async {
 
   // FCM is enabled for Android only. No Analytics SDK is added.
   if (Platform.isAndroid) {
-    await Firebase.initializeApp();
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    final messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission(alert: true, badge: true, sound: true);
-    await messaging.subscribeToTopic('app_updates');
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      final messaging = FirebaseMessaging.instance;
+      await messaging.requestPermission(alert: true, badge: true, sound: true);
+      await messaging.subscribeToTopic('app_updates');
 
-    FirebaseMessaging.onMessage.listen((message) async {
-      final isNew = await _saveUpdateMessage(message);
-      if (isNew) {
-        await AppNotificationService.showUpdate(
-          title: (message.data['title_ar'] ?? '').toString(),
-          body: (message.data['description_ar'] ?? '').toString(),
-        );
+      FirebaseMessaging.onMessage.listen((message) async {
+        final isNew = await _saveUpdateMessage(message);
+        if (isNew) {
+          await AppNotificationService.showUpdate(
+            body: (message.data['description_ar'] ?? '').toString(),
+          );
+        }
+      });
+      FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+        if (message.data['type'] == 'app_update') {
+          await _saveUpdateMessage(message);
+          await _openNotifications();
+        }
+      });
+      final initialMessage = await messaging.getInitialMessage();
+      if (initialMessage?.data['type'] == 'app_update') {
+        await _saveUpdateMessage(initialMessage!);
+        UpdateNotificationStore.pendingOpenNotifications = true;
       }
-    });
-    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
-      if (message.data['type'] == 'app_update') {
-        await _saveUpdateMessage(message);
-        _openNotifications();
-      }
-    });
-    final initialMessage = await messaging.getInitialMessage();
-    if (initialMessage?.data['type'] == 'app_update') {
-      await _saveUpdateMessage(initialMessage!);
-      UpdateNotificationStore.pendingOpenNotifications = true;
+    } catch (error) {
+      // Push setup is optional; it must never prevent the app from opening.
+      debugPrint('Push notification setup failed: $error');
     }
   }
 }
