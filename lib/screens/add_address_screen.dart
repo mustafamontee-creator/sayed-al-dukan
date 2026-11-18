@@ -115,7 +115,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       height: 44,
                       child: const Icon(
                         Icons.location_pin,
-                        color: AppColors.black,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 42,
                       ),
                     ),
@@ -138,8 +138,8 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
               top: 12,
               child: FloatingActionButton.extended(
                 heroTag: 'loc',
-                backgroundColor: AppColors.black,
-                foregroundColor: AppColors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 elevation: 0,
                 onPressed: _locate,
                 icon: const Icon(Icons.my_location),
@@ -165,9 +165,9 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
-                activeColor: AppColors.black,
-                checkColor: AppColors.white,
-                side: const BorderSide(color: AppColors.black, width: 2),
+                activeColor: Theme.of(context).colorScheme.primary,
+                checkColor: Theme.of(context).colorScheme.onPrimary,
+                side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1.5),
                 value: _default,
                 onChanged: (v) => setState(() => _default = v ?? false),
                 title: Text(context.t('defaultAddress')),
