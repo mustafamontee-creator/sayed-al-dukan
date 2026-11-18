@@ -115,6 +115,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Line(),
         ListTile(
           contentPadding: EdgeInsets.zero,
+          leading: Icon(s.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded),
+          title: Text(s.lang == 'en' ? 'Dark mode' : 'الوضع الداكن'),
+          subtitle: Text(s.lang == 'en'
+              ? (s.isDarkMode ? 'Enabled' : 'Disabled')
+              : (s.isDarkMode ? 'مفعّل' : 'غير مفعّل')),
+          trailing: Switch.adaptive(
+            value: s.isDarkMode,
+            onChanged: s.setDarkMode,
+          ),
+        ),
+        const Line(),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.refresh_rounded, color: Color(0xFF238653)),
           title: Text(context.t('checkUpdates')),
           trailing: const Icon(Icons.chevron_right, color: AppColors.black),
