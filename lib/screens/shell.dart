@@ -34,6 +34,7 @@ class _ShellState extends State<Shell> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final items = <(IconData?, String)>[
       (Icons.info_outline, context.t('about')),
       (Icons.search, context.t('search')),
@@ -60,7 +61,7 @@ class _ShellState extends State<Shell> {
         child: KeyedSubtree(key: ValueKey(_i), child: _pages[_i]),
       ),
       bottomNavigationBar: Container(
-        color: AppColors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: SafeArea(
           top: false,
           child: SizedBox(
@@ -79,11 +80,11 @@ class _ShellState extends State<Shell> {
                                   width: 62,
                                   height: 62,
                                   alignment: Alignment.center,
-                                  decoration: const BoxDecoration(
-                                      color: AppColors.black, shape: BoxShape.circle),
+                                  decoration: BoxDecoration(
+                                      color: colors.primary, shape: BoxShape.circle),
                                   child: Text(items[n].$2,
                                       style: const TextStyle(
-                                          color: AppColors.white,
+                                          color: colors.onPrimary,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14)),
                                 ),
@@ -91,7 +92,7 @@ class _ShellState extends State<Shell> {
                             : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(items[n].$1, color: AppColors.black, size: _i == n ? 28 : 24),
+                                  Icon(items[n].$1, color: _i == n ? colors.primary : colors.onSurface, size: _i == n ? 28 : 24),
                                   const SizedBox(height: 3),
                                   Text(items[n].$2,
                                       maxLines: 1,
