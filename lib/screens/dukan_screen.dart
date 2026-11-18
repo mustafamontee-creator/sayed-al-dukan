@@ -3,7 +3,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-import '../core/strings.dart';
 import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/cart_service.dart';
