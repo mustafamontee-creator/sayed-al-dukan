@@ -6,7 +6,6 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'app_notification_service.dart';
 import 'update_notification_store.dart';
 
 class AppUpdateInfo {
@@ -53,14 +52,8 @@ class UpdateService {
         descriptionAr: update.descriptionAr,
         descriptionEn: update.descriptionEn,
       );
-      if (isNew) {
-        await AppNotificationService.showUpdate(
-          title: update.titleAr,
-          body: update.descriptionAr.isNotEmpty
-              ? update.descriptionAr
-              : 'اضغط هنا لمعرفة تفاصيل التحديث',
-        );
-      }
+      // The server push is responsible for the system notification. This startup check
+      // only stores the latest update as a fallback, avoiding duplicate alerts.
     } catch (_) {
       // Update checks are best-effort and must not block app startup.
     }
