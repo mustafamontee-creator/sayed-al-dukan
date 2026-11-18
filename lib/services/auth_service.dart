@@ -40,6 +40,16 @@ class AuthService extends ChangeNotifier {
       _a.signInWithOtp(phone: e164Phone, shouldCreateUser: false);
 
   // Allow a new customer to create an account through email OTP.
+  Future<void> signInEmailPassword(String emailAddress, String password) async {
+    await _a.signInWithPassword(email: emailAddress.trim(), password: password);
+  }
+
+  Future<void> sendPasswordReset(String emailAddress) =>
+      _a.resetPasswordForEmail(
+        emailAddress.trim(),
+        redirectTo: AppConfig.oauthRedirect,
+      );
+
   Future<void> sendEmailOtp(String emailAddress) =>
       _a.signInWithOtp(
         email: emailAddress.trim(),
