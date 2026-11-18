@@ -16,6 +16,25 @@ perms = [
 add = "".join(f'    <uses-permission android:name="{p}"/>\n' for p in perms if p not in s)
 if add:
     s = s.replace("<application", add + "    <application", 1)
+
+# Route background FCM notifications to the app's high-priority updates channel.
+if "com.google.firebase.messaging.default_notification_channel_id" not in s:
+    s = s.replace(
+        "<application",
+        '<application\\n        android:usesCleartextTraffic="false"',
+        1,
+    )
+    s = s.replace(
+        'android:usesCleartextTraffic="false"',
+        'android:usesCleartextTraffic="false">\\n'
+        '        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" '
+        'android:value="app_updates"/>\\n'
+        '        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" '
+        'android:resource="@mipmap/ic_launcher"/>\\n'
+        '        <application-placeholder',
+        1,
+    )
+    s = s.replace('<application-placeholder', '', 1)
 s = re.sub(r'android:label="[^"]*"', 'android:label="سيد الدكان"', s, count=1)
 s = re.sub(r'\s*<meta-data\s+android:name="com\.google\.android\.geo\.API_KEY"[^>]*/>\s*', '\n', s)
 if "login-callback" not in s:
