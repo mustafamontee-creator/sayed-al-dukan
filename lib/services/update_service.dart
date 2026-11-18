@@ -6,6 +6,9 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'app_notification_service.dart';
+import 'update_notification_store.dart';
+
 class AppUpdateInfo {
   const AppUpdateInfo({
     required this.versionName,
@@ -39,6 +42,29 @@ class AppUpdateInfo {
 class UpdateService {
   static const manifestUrl =
       'https://raw.githubusercontent.com/mustafamontee-creator/sayed-al-dukan/feature/pro-ui-refresh/app-update.json';
+
+  static Future<void> checkAndNotify() async {
+    try {
+      final update = await check();
+      if (update == null) return;
+      final isNew = await UpdateNotificationStore.save(
+        versionName: update.versionName,
+        versionCode: update.versionCode,
+        descriptionAr: update.descriptionAr,
+        descriptionEn: update.descriptionEn,
+      );
+      if (isNew) {
+        await AppNotificationService.showUpdate(
+          title: update.titleAr,
+          body: update.descriptionAr.isNotEmpty
+              ? update.descriptionAr
+              : 'اضغط هنا لمعرفة تفاصيل التحديث',
+        );
+      }
+    } catch (_) {
+      // Update checks are best-effort and must not block app startup.
+    }
+  }
 
   static Future<AppUpdateInfo?> check() async {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 12);
