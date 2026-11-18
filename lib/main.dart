@@ -22,16 +22,22 @@ import 'services/update_notification_store.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  if (Platform.isAndroid) {
+  if (!Platform.isAndroid) return;
+  try {
     DartPluginRegistrant.ensureInitialized();
     await Firebase.initializeApp();
-    await AppNotificationService.initialize(onUpdateTap: () async {}, handleLaunchDetails: false);
+    await AppNotificationService.initialize(
+      onUpdateTap: () async {},
+      handleLaunchDetails: false,
+    );
     final isNew = await _saveUpdateMessage(message);
     if (isNew) {
       await AppNotificationService.showUpdate(
         body: (message.data['description_ar'] ?? '').toString(),
       );
     }
+  } catch (error) {
+    debugPrint('Background update notification failed: $error');
   }
 }
 
@@ -74,7 +80,12 @@ Future<void> main() async {
   final auth = AuthService()..onSignedIn = cart.mergeFromServer;
   auth.init();
 
-  await AppNotificationService.initialize(onUpdateTap: _openNotifications);
+  try {
+    await AppNotificationService.initialize(onUpdateTap: _openNotifications);
+  } catch (error) {
+    // Notification support is optional and must not block normal startup.
+    debugPrint('Local notification initialization failed: $error');
+  }
 
   runApp(MultiProvider(
     providers: [
