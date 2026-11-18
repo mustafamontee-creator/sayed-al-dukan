@@ -82,7 +82,7 @@ class _AboutScreenState extends State<AboutScreen> {
         _faq(en ? 'Can I save more than one address?' : 'ممكن أحفظ أكثر من عنوان؟', en ? 'Yes. Add and save addresses from your account, then choose the suitable address during checkout.' : 'أيوه، تقدر تضيف وتحفظ أكثر من عنوان من صفحة الحساب، وتختار العنوان المناسب وقت إتمام الطلب.'),
         _faq(en ? 'How can I contact support?' : 'كيف أتواصل مع الدعم الفني؟', en ? 'Open Settings, choose Technical Support, and use the developer Instagram contact.' : 'افتح الإعدادات واختار الدعم الفني، أو تواصل مع المطوّر عبر حساب إنستغرام الموجود أدناه.'),
         _faq(en ? 'Which payment and delivery methods are available?' : 'شنو طرق الدفع والتوصيل؟', en ? 'Available details will be shown during checkout. The app does not promise a payment or delivery option that is not displayed there.' : 'التفاصيل المتاحة حتظهر ليك أثناء إتمام الطلب. التطبيق ما بوعد بطريقة دفع أو توصيل غير المعروضة وقت الطلب.'),
-        const Divider(color: AppColors.black),
+        Divider(color: Theme.of(context).dividerColor),
         Text(en ? 'Developer' : 'المطوّر', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(en ? 'Sayed Al-Dukan app developer' : 'تطوير تطبيق سيد الدكان'),
@@ -98,7 +98,7 @@ class _AboutScreenState extends State<AboutScreen> {
               children: List.generate(5, (i) => IconButton(
                 onPressed: () => setState(() { _rating = i + 1; _saved = false; }),
                 icon: Icon(i < _rating ? Icons.star : Icons.star_border,
-                    size: 34, color: AppColors.black),
+                    size: 34, color: Theme.of(context).colorScheme.primary),
               )),
             ),
           ),
