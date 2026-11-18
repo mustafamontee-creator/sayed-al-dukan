@@ -170,7 +170,7 @@ class _CartButton extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: AppColors.white, borderRadius: BorderRadius.circular(10)),
                 child: Text('$n',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
