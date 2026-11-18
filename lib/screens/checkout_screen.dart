@@ -98,7 +98,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(context.t('checkout'))),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.black))
+          ? const Center(child: CircularProgressIndicator())
           : _err != null
               ? ErrorView(error: _err!, onRetry: _load)
               : ListView(padding: const EdgeInsets.all(16), children: [
@@ -128,7 +128,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     for (final a in _addrs)
                       RadioListTile<String>(
                         contentPadding: EdgeInsets.zero,
-                        activeColor: AppColors.black,
+                        activeColor: Theme.of(context).colorScheme.primary,
                         value: a.id,
                         groupValue: _sel,
                         onChanged: (v) => setState(() => _sel = v),
