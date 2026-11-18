@@ -54,3 +54,27 @@ jobs:
           name: Sayed Al-Dukan 1.0.15
           files: build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
+
+      - name: Notify subscribed users about the published update
+        if: github.ref == 'refs/heads/feature/pro-ui-refresh'
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY is not configured; update push was skipped."
+            exit 0
+          fi
+          MANIFEST="$(cat app-update.json)"
+          PAYLOAD="$(printf '%s' "$MANIFEST" | jq -c '{
+            version_name: .version_name,
+            version_code: .version_code,
+            title_ar: .title_ar,
+            description_ar: .description_ar,
+            description_en: .description_en
+          }')"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://vusjswnvqbxspdgbekxc.supabase.co/functions/v1/send-app-update" \
+            --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            --header "Content-Type: application/json" \
+            --data "$PAYLOAD"
