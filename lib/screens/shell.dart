@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../core/strings.dart';
-import '../core/theme.dart';
 import '../services/update_service.dart';
 import 'about_screen.dart';
 import 'account_screen.dart';
@@ -83,7 +82,7 @@ class _ShellState extends State<Shell> {
                                   decoration: BoxDecoration(
                                       color: colors.primary, shape: BoxShape.circle),
                                   child: Text(items[n].$2,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: colors.onPrimary,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14)),
