@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "599471062354",
+    "project_id": "sayed-al-dukan-6dbd3",
+    "storage_bucket": "sayed-al-dukan-6dbd3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:599471062354:android:25faa490a9e55b71df0e8b",
+        "android_client_info": {
+          "package_name": "com.sayedaldukan.sayed_al_dukan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLrl9KK0n4uLlSq8sSVEjfdArzhvLuXsE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
