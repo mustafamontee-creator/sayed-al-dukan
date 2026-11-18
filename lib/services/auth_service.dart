@@ -43,7 +43,6 @@ class AuthService extends ChangeNotifier {
       _a.signInWithOtp(
         email: emailAddress.trim(),
         shouldCreateUser: true,
-        emailRedirectTo: AppConfig.oauthRedirect,
       );
 
   Future<void> verifyOtp(String e164Phone, String code) =>
