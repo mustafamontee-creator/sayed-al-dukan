@@ -1,9 +1,6 @@
 name: Build Android APK
 
 on:
-  push:
-    branches: [main, feature/pro-ui-refresh]
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
