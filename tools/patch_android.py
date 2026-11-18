@@ -23,10 +23,11 @@ if "com.google.firebase.messaging.default_notification_channel_id" not in s:
     app_end = s.find(">", app_start)
     if app_start < 0 or app_end < 0:
         raise SystemExit("Could not locate Android application tag")
-    metadata = (
-        '\\n        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" '
+    metadata = chr(10) + (
+        '        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" '
         'android:value="app_updates"/>'
-        '\\n        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" '
+    ) + chr(10) + (
+        '        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" '
         'android:resource="@mipmap/ic_launcher"/>'
     )
     s = s[:app_end + 1] + metadata + s[app_end + 1:]
