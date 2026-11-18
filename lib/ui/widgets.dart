@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/config.dart';
 import '../core/format.dart';
 import '../core/strings.dart';
-import '../core/theme.dart';
 
 String money(BuildContext c, num v) => '${formatNumber(v)} ${c.t('currency')}';
 
@@ -66,6 +65,7 @@ class NotFoundView extends StatelessWidget {
   final bool onDark;
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Center(
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
