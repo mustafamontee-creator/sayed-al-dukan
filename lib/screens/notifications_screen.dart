@@ -60,17 +60,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final en = context.lang == 'en';
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.t('notifications')),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.black,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.black));
+            return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             return ErrorView(
@@ -86,7 +86,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const SizedBox(height: 130),
-                  const Icon(Icons.notifications_none, size: 58, color: AppColors.black),
+                  Icon(Icons.notifications_none, size: 58, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   const SizedBox(height: 14),
                   Center(
                     child: Text(
@@ -105,7 +105,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: rows.length,
-              separatorBuilder: (_, __) => const Divider(color: AppColors.black),
+              separatorBuilder: (_, __) => Divider(color: Theme.of(context).dividerColor),
               itemBuilder: (context, index) {
                 final row = rows[index];
                 final order = row['orders'] is Map
@@ -116,13 +116,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 final note = (row['note'] ?? '').toString().trim();
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.black,
-                    child: Icon(Icons.notifications_active_outlined, color: AppColors.white),
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    child: Icon(Icons.notifications_active_outlined, color: Theme.of(context).colorScheme.onPrimary),
                   ),
                   title: Text(
                     _statusTitle(context, status),
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.black),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 5),
