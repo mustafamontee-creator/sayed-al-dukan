@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _sendEmail() async {
     final email = _email.text.trim();
-    if (!RegExp(r'^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$').hasMatch(email)) {
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       setState(() => _err = context.t('invalidEmail'));
       return;
     }
