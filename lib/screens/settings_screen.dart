@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           title: Text(label),
           trailing: enabled
-              ? const Icon(Icons.check_circle, color: AppColors.black)
+              ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
               : Text(context.t('soon')),
         );
     return SafeArea(
@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Text(context.t('language'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         RadioListTile<String>(
           contentPadding: EdgeInsets.zero,
-          activeColor: AppColors.black,
+          activeColor: Theme.of(context).colorScheme.primary,
           value: 'ar',
           groupValue: s.lang,
           onChanged: (v) => s.setLang(v!),
@@ -130,14 +130,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.refresh_rounded, color: Color(0xFF238653)),
           title: Text(context.t('checkUpdates')),
-          trailing: const Icon(Icons.chevron_right, color: AppColors.black),
+          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onTap: () => UpdateService.checkAndShow(context, showNoUpdate: true),
         ),
         const Line(),
         const SizedBox(height: 8),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.support_agent, color: AppColors.black),
+          leading: Icon(Icons.support_agent, color: Theme.of(context).colorScheme.onSurface),
           title: Text(s.lang == 'en' ? 'Technical Support' : 'الدعم الفني'),
           trailing: const Icon(Icons.chevron_right, color: AppColors.black),
           onTap: () => Navigator.of(context).push(
@@ -153,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         const SizedBox(height: 14),
         const Center(
-          child: Text('الإصدار 1.0.0', style: TextStyle(fontSize: 10, color: AppColors.black)),
+          child: Text('الإصدار 1.0.14', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
       ]),
     );
