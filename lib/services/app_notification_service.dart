@@ -49,7 +49,8 @@ class AppNotificationService {
   }) async {
     final detailsText = body?.trim().isNotEmpty == true
         ? body!.trim()
-        : 'توجد تحسينات وميزات جديدة في التطبيق. افتح صفحة الإشعارات لمعرفة التفاصيل.';
+        : 'توجد تحسينات وإصلاحات جديدة. افتح صفحة الإشعارات داخل التطبيق لمعرفة التفاصيل.';
+    const notificationTitle = 'متوفر تحديث جديد';
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         'app_updates',
@@ -60,16 +61,15 @@ class AppNotificationService {
         icon: '@mipmap/ic_launcher',
         styleInformation: BigTextStyleInformation(
           detailsText,
-          contentTitle: 'سيد الدكان',
-          summaryText: 'إشعار تحديث جديد',
+          contentTitle: notificationTitle,
         ),
       ),
       iOS: const DarwinNotificationDetails(),
     );
     await _plugin.show(
       1401,
-      'إشعار تحديث جديد',
-      'يتوفر تحديث جديد. اسحب لعرض التفاصيل.',
+      notificationTitle,
+      null,
       details,
       payload: 'app_update',
     );
