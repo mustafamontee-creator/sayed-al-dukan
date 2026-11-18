@@ -1,9 +1,9 @@
 {
-  "version_name": "1.0.19",
-  "version_code": 20,
-  "title_ar": "متوفر تحديث جديد",
-  "title_en": "A new update is available",
-  "description_ar": "تطوير تسجيل الدخول بالبريد وكلمة المرور، إضافة استعادة كلمة المرور وإنشاء حساب جديد، مع تحسينات لواجهة الدخول.",
-  "description_en": "Improved email and password sign-in, added password recovery and email account creation, with a more polished login experience.",
-  "apk_url": "https://github.com/mustafamontee-creator/sayed-al-dukan/releases/download/v1.0.19/app-release.apk"
+  "version_name": "1.0.20",
+  "version_code": 21,
+  "title_ar": "تحديث أمني وتحسينات جديدة",
+  "title_en": "Security and stability update",
+  "description_ar": "تقوية حماية البيانات والطلبات، تحسين التحقق من مدخلات الطلب، وتحديثات للاستقرار والأمان.",
+  "description_en": "Stronger data and order protections, stricter server-side order validation, and security and stability improvements.",
+  "apk_url": "https://github.com/mustafamontee-creator/sayed-al-dukan/releases/download/v1.0.20/app-release.apk"
 }

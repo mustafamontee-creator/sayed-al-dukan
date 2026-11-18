@@ -13,9 +13,9 @@ create table if not exists public.admins (
 );
 
 create or replace function public.is_admin() returns boolean
-language sql stable security definer set search_path = public as $$
+language sql stable security invoker set search_path = '' as $
   select exists (select 1 from public.admins where user_id = auth.uid());
-$$;
+$;
 
 create or replace function public.touch_updated_at() returns trigger
 language plpgsql as $$ begin new.updated_at = now(); return new; end $$;
@@ -35,7 +35,7 @@ create trigger profiles_touch before update on public.profiles
   for each row execute function public.touch_updated_at();
 
 create or replace function public.handle_new_user() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = '' as $
 begin
   insert into public.profiles(id, full_name)
   values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'))
@@ -167,7 +167,11 @@ create table if not exists public.app_content (
 
 -- ---------- place_order(): the ONLY way to create an order -------------
 create or replace function public.place_order(p_address_id uuid, p_items jsonb)
-returns jsonb language plpgsql security definer set search_path = public as $$
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $function$
 declare
   v_uid uuid := auth.uid();
   v_addr public.addresses%rowtype;
@@ -179,44 +183,89 @@ declare
   v_min int;
   v_line numeric(12,2);
   v_total numeric(12,2) := 0;
+  v_product_id text;
+  v_note text;
 begin
-  if v_uid is null then raise exception 'not_authenticated' using errcode = '28000'; end if;
-  select * into v_addr from public.addresses where id = p_address_id and user_id = v_uid;
-  if not found then raise exception 'address_not_found'; end if;
-  if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
-    raise exception 'empty_cart';
+  if v_uid is null then
+    raise exception 'not_authenticated' using errcode = '28000';
   end if;
+  if p_address_id is null then raise exception 'address_required'; end if;
+
+  select * into v_addr
+  from public.addresses
+  where id = p_address_id and user_id = v_uid;
+  if not found then raise exception 'address_not_found'; end if;
+
+  if p_items is null or jsonb_typeof(p_items) <> 'array' then raise exception 'invalid_cart'; end if;
+  if jsonb_array_length(p_items) = 0 then raise exception 'empty_cart'; end if;
+  if jsonb_array_length(p_items) > 30 then raise exception 'too_many_items'; end if;
 
   v_number := 'SD-' || to_char(now() at time zone 'Africa/Cairo', 'YYMMDD') || '-' ||
               lpad(nextval('public.order_number_seq')::text, 5, '0');
 
   insert into public.orders(id, order_number, user_id, address_snapshot, status)
-  values (v_order, v_number, v_uid,
-          jsonb_build_object('address_text', v_addr.address_text, 'latitude', v_addr.latitude,
-                             'longitude', v_addr.longitude, 'landmark', v_addr.landmark),
-          'pending');
+  values (
+    v_order, v_number, v_uid,
+    jsonb_build_object(
+      'address_text', v_addr.address_text,
+      'latitude', v_addr.latitude,
+      'longitude', v_addr.longitude,
+      'landmark', v_addr.landmark
+    ),
+    'pending'
+  );
 
   for v_item in select * from jsonb_array_elements(p_items) loop
-    select * into v_prod from public.products
-      where id = (v_item->>'product_id')::uuid and is_active;
-    if not found then raise exception 'product_unavailable'; end if;
+    if jsonb_typeof(v_item) <> 'object' then raise exception 'invalid_cart_item'; end if;
+
+    v_product_id := v_item->>'product_id';
+    if v_product_id is null or
+       v_product_id !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
+      raise exception 'invalid_product_id';
+    end if;
+    if coalesce(v_item->>'quantity', '') !~ '^[1-9][0-9]{0,4}$' then
+      raise exception 'invalid_quantity';
+    end if;
+
     v_qty := (v_item->>'quantity')::int;
-    v_min := case when v_prod.min_order_value > 0
-                  then greatest(ceil(v_prod.min_order_value / v_prod.unit_price)::int, 1)
-                  else 1 end;
-    if v_qty is null or v_qty < v_min then raise exception 'below_minimum'; end if;
-    v_line := v_qty * v_prod.unit_price;               -- price comes from the DB, never the client
+    if v_qty > 10000 then raise exception 'quantity_too_large'; end if;
+
+    v_note := coalesce(v_item->>'note', '');
+    if char_length(v_note) > 500 then raise exception 'item_note_too_long'; end if;
+
+    select * into v_prod
+    from public.products
+    where id = v_product_id::uuid and is_active;
+    if not found then raise exception 'product_unavailable'; end if;
+    if v_prod.unit_price is null or v_prod.unit_price <= 0 then
+      raise exception 'invalid_product_price';
+    end if;
+
+    v_min := case
+      when v_prod.min_order_value > 0
+        then greatest(ceil(v_prod.min_order_value / v_prod.unit_price)::int, 1)
+      else 1
+    end;
+    if v_qty < v_min then raise exception 'below_minimum'; end if;
+
+    v_line := v_qty * v_prod.unit_price;
     v_total := v_total + v_line;
-    insert into public.order_items(order_id, product_id, product_name, unit_price, quantity, note, line_total)
-    values (v_order, v_prod.id, v_prod.name, v_prod.unit_price, v_qty,
-            coalesce(v_item->>'note', ''), v_line);
+    insert into public.order_items(
+      order_id, product_id, product_name, unit_price, quantity, note, line_total
+    )
+    values (
+      v_order, v_prod.id, v_prod.name, v_prod.unit_price, v_qty, v_note, v_line
+    );
   end loop;
 
   update public.orders set subtotal = v_total, total = v_total where id = v_order;
-  insert into public.order_events(order_id, status, actor) values (v_order, 'pending', v_uid);
+  insert into public.order_events(order_id, status, actor)
+  values (v_order, 'pending', v_uid);
   delete from public.cart_items where user_id = v_uid;
+
   return jsonb_build_object('order_id', v_order, 'order_number', v_number);
-end $$;
+end
+$function$;
 
 revoke all on function public.place_order(uuid, jsonb) from public, anon;
 grant execute on function public.place_order(uuid, jsonb) to authenticated;
@@ -295,3 +344,32 @@ create policy "product images admin write" on storage.objects for all
 
 -- To make someone an admin (for the XXX app), run once as project owner:
 --   insert into public.admins(user_id) values ('<auth user uuid>');
+
+-- ---------- Explicit least-privilege Data API grants ----------------------
+-- RLS remains the row-level authorization layer; these grants only expose
+-- the operations required by the customer app and the future admin app.
+revoke all privileges on all tables in schema public from public, anon, authenticated;
+grant select on table
+  public.products, public.product_images, public.app_content,
+  public.order_statuses, public.reviews
+to anon;
+
+grant select, insert, update, delete on table
+  public.addresses, public.cart_items, public.app_content,
+  public.order_events, public.order_items, public.order_statuses,
+  public.product_images, public.products, public.reviews
+to authenticated;
+
+grant select, update on table public.orders to authenticated;
+grant select, update on table public.profiles to authenticated;
+grant select on table public.admins to authenticated;
+
+revoke all privileges on all sequences in schema public from public, anon, authenticated;
+
+-- Prevent future objects created by postgres from inheriting broad API access.
+alter default privileges for role postgres in schema public
+  revoke all privileges on tables from anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke all privileges on sequences from anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from anon, authenticated;

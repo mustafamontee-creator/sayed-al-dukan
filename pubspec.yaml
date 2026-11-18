@@ -1,7 +1,7 @@
 name: sayed_al_dukan
 description: سيد الدكان - تطبيق العملاء (SAYED AL-DUKAN customer app)
 publish_to: 'none'
-version: 1.0.19+20
+version: 1.0.20+21
 environment:
   sdk: '>=3.4.0 <4.0.0'
 dependencies:
