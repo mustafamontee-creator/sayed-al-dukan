@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/strings.dart';
 import '../core/format.dart';
@@ -20,6 +21,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   String? _loadedFor;
+  String _appVersion = '...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _appVersion = info.version);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _appVersion = 'غير متاح');
+    }
+  }
 
   @override
   void dispose() {
@@ -152,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         const SizedBox(height: 14),
         Center(
-          child: Text('الإصدار 1.0.14', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          child: Text(s.lang == 'en' ? 'Version $_appVersion' : 'الإصدار $_appVersion', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
       ]),
     );
