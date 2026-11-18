@@ -22,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _phone = TextEditingController();
   String? _loadedFor;
   String _appVersion = '...';
+  String _buildNumber = '';
 
   @override
   void initState() {
@@ -33,7 +34,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final info = await PackageInfo.fromPlatform();
       if (!mounted) return;
-      setState(() => _appVersion = info.version);
+      setState(() {
+        _appVersion = info.version;
+        _buildNumber = info.buildNumber;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _appVersion = 'غير متاح');
@@ -171,7 +175,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         const SizedBox(height: 14),
         Center(
-          child: Text(s.lang == 'en' ? 'Version $_appVersion' : 'الإصدار $_appVersion', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          child: Text(
+            s.lang == 'en'
+                ? 'Version $_appVersion ($_buildNumber)'
+                : 'الإصدار $_appVersion ($_buildNumber)',
+            style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
         ),
       ]),
     );
