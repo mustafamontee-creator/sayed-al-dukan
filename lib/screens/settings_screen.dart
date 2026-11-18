@@ -7,6 +7,7 @@ import '../core/theme.dart';
 import '../services/auth_service.dart';
 import '../services/repo.dart';
 import '../services/settings_controller.dart';
+import '../services/update_service.dart';
 import 'support_screen.dart';
 import '../ui/widgets.dart';
 
@@ -111,6 +112,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         region(context.t('egypt'), true),
         region(context.t('saudi'), false),
         region(context.t('sudan'), false),
+        const Line(),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.refresh_rounded, color: Color(0xFF238653)),
+          title: Text(context.t('checkUpdates')),
+          trailing: const Icon(Icons.chevron_right, color: AppColors.black),
+          onTap: () => UpdateService.checkAndShow(context, showNoUpdate: true),
+        ),
         const Line(),
         const SizedBox(height: 8),
         ListTile(
