@@ -79,7 +79,8 @@ class UpdateService {
       return;
     }
     if (!context.mounted) return;
-    if (update == null) {
+    final availableUpdate = update;
+    if (availableUpdate == null) {
       if (showNoUpdate) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(
@@ -103,14 +104,14 @@ class UpdateService {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-            title: Text(isEnglish ? update.titleEn : update.titleAr),
+            title: Text(isEnglish ? availableUpdate.titleEn : availableUpdate.titleAr),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(isEnglish ? 'Version ${update.versionName}' : 'الإصدار ${update.versionName}'),
+                Text(isEnglish ? 'Version ${availableUpdate.versionName}' : 'الإصدار ${availableUpdate.versionName}'),
                 const SizedBox(height: 9),
-                Text(isEnglish ? update.descriptionEn : update.descriptionAr),
+                Text(isEnglish ? availableUpdate.descriptionEn : availableUpdate.descriptionAr),
                 if (downloading) ...[
                   const SizedBox(height: 18),
                   LinearProgressIndicator(value: progress > 0 ? progress : null),
@@ -128,7 +129,7 @@ class UpdateService {
               ),
               FilledButton(
                 onPressed: downloading ? null : () async {
-                  if (!update.apkUrl.startsWith('https://')) {
+                  if (!availableUpdate.apkUrl.startsWith('https://')) {
                     setDialogState(() => error = isEnglish
                         ? 'The update file is not published yet.'
                         : 'ملف التحديث لم يُنشر بعد.');
@@ -136,7 +137,7 @@ class UpdateService {
                   }
                   setDialogState(() { downloading = true; error = null; });
                   try {
-                    final file = await _download(update.apkUrl, (value) {
+                    final file = await _download(availableUpdate.apkUrl, (value) {
                       if (dialogContext.mounted) setDialogState(() => progress = value);
                     });
                     if (!dialogContext.mounted) return;
