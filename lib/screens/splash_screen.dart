@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/strings.dart';
 import '../core/theme.dart';
+import '../services/update_service.dart';
 import 'shell.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,12 +17,18 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(milliseconds: 2200), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(PageRouteBuilder(
+      _continueToApp();
+    });
+  }
+
+  Future<void> _continueToApp() async {
+    await UpdateService.checkAndShow(context);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
         pageBuilder: (_, __, ___) => const Shell(),
         transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
       ));
-    });
   }
 
   @override
