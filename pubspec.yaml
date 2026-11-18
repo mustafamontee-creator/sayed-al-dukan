@@ -27,6 +27,7 @@ dependencies:
   firebase_messaging: ^16.7.1
   flutter_local_notifications: ^19.5.0
   video_player: ^2.10.0
+  flutter_svg: ^2.0.10+1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -37,6 +38,7 @@ flutter:
   assets:
     - assets/images/
     - assets/animation/
+    - assets/brand/
 flutter_launcher_icons:
   android: true
   ios: true
