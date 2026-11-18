@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UpdateNotificationStore {
@@ -8,6 +9,12 @@ class UpdateNotificationStore {
   static const _updateKey = 'latest_update_notification';
   static const _lastAnnouncedKey = 'last_announced_update_version_code';
   static const _unreadKey = 'has_unread_update_notification';
+  static final ValueNotifier<bool> unread = ValueNotifier<bool>(false);
+
+  static Future<void> refreshUnread() async {
+    final prefs = await SharedPreferences.getInstance();
+    unread.value = prefs.getBool(_unreadKey) ?? false;
+  }
 
   static Future<bool> save({
     required String versionName,
@@ -30,6 +37,7 @@ class UpdateNotificationStore {
     await prefs.setString(_updateKey, jsonEncode(item));
     await prefs.setInt(_lastAnnouncedKey, versionCode);
     await prefs.setBool(_unreadKey, true);
+    unread.value = true;
     return true;
   }
 
@@ -46,11 +54,14 @@ class UpdateNotificationStore {
 
   static Future<bool> hasUnread() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_unreadKey) ?? false;
+    final value = prefs.getBool(_unreadKey) ?? false;
+    unread.value = value;
+    return value;
   }
 
   static Future<void> markRead() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_unreadKey, false);
+    unread.value = false;
   }
 }
