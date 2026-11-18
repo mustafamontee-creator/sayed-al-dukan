@@ -60,7 +60,7 @@ class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.black,
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Column(
@@ -171,7 +171,7 @@ class _CartButton extends StatelessWidget {
                     color: AppColors.white, borderRadius: BorderRadius.circular(10)),
                 child: Text('$n',
                     style: const TextStyle(
-                        color: AppColors.black, fontSize: 11, fontWeight: FontWeight.bold)),
+                        color: Theme.of(context).colorScheme.onSurface, fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ),
         ]),
