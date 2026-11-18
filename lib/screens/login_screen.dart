@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/strings.dart';
+import '../core/theme.dart';
 import '../services/auth_service.dart';
 
 /// Pops with `true` once the customer is signed in, so callers (checkout)
