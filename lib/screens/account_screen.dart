@@ -298,11 +298,11 @@ class _AccountScreenState extends State<AccountScreen> {
               if (addresses.isEmpty) return Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(20)),
-                child: const Column(children: [
+                child: Column(children: [
                   Icon(Icons.add_location_alt_outlined, size: 34, color: mutedColor),
-                  SizedBox(height: 8),
-                  Text('لا توجد عناوين مضافة', style: TextStyle(fontWeight: FontWeight.w700)),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 8),
+                  Text('لا توجد عناوين مضافة', style: TextStyle(fontWeight: FontWeight.w700, color: colors.onSurface)),
+                  const SizedBox(height: 4),
                   Text('أضف عنوانك لتسهيل توصيل طلباتك', style: TextStyle(color: mutedColor, fontSize: 12)),
                 ]),
               );
@@ -323,8 +323,8 @@ class _AccountScreenState extends State<AccountScreen> {
                       if (a.isDefault) Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(color: greenSoftColor, borderRadius: BorderRadius.circular(20)),
-                        child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.check_circle, color: greenColor, size: 14), SizedBox(width: 4),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.check_circle, color: greenColor, size: 14), const SizedBox(width: 4),
                           Text('افتراضي', style: TextStyle(color: greenColor, fontSize: 11, fontWeight: FontWeight.w800)),
                         ]),
                       ),
