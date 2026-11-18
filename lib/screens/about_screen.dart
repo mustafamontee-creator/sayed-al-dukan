@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../core/theme.dart';
 import '../services/settings_controller.dart';
 
 class AboutScreen extends StatefulWidget {
