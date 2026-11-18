@@ -88,19 +88,24 @@ g = g.replace('signingConfig = signingConfigs.getByName("debug")',
               'signingConfig = signingConfigs.getByName("release")')
 # flutter_local_notifications requires Java 8+ API desugaring on Android.
 if "isCoreLibraryDesugaringEnabled" not in g:
-    compile_block = re.search(r"    compileOptions\s*\{", g)
-    if not compile_block:
-        raise SystemExit("Could not locate compileOptions in generated Gradle file")
-    block_end = g.find("    }", compile_block.end())
-    if block_end < 0:
-        raise SystemExit("Could not locate end of compileOptions block")
-    g = g[:block_end] + "        isCoreLibraryDesugaringEnabled = true\n" + g[block_end:]
-if "coreLibraryDesugaring(" not in g:
-    dep_block = re.search(r"dependencies\s*\{", g)
-    if dep_block:
-        pos = dep_block.end()
-        g = g[:pos] + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' + g[pos:]
+    compile_block = re.search(r"compileOptions\\s*\\{", g)
+    if compile_block:
+        block_end = g.find("}", compile_block.end())
+        if block_end < 0:
+            raise SystemExit("Could not locate end of compileOptions block")
+        g = g[:block_end] + "        isCoreLibraryDesugaringEnabled = true\\n    " + g[block_end:]
     else:
-        g += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
+        android_block = re.search(r"android\\s*\\{", g)
+        if not android_block:
+            raise SystemExit("Could not locate android block in generated Gradle file")
+        addition = "\\n    compileOptions {\\n        isCoreLibraryDesugaringEnabled = true\\n    }\\n"
+        g = g[:android_block.end()] + addition + g[android_block.end():]
+if "coreLibraryDesugaring(" not in g:
+    dep_block = re.search(r"dependencies\\s*\\{", g)
+    dependency = '\\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")'
+    if dep_block:
+        g = g[:dep_block.end()] + dependency + g[dep_block.end():]
+    else:
+        g += '\\ndependencies {\\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\\n}\\n'
 gradle.write_text(g, encoding="utf-8")
 print("Patched Android manifest, Firebase plugins, and release signing configuration")
