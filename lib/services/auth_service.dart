@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/config.dart';
@@ -51,8 +52,11 @@ class AuthService extends ChangeNotifier {
   Future<void> verifyEmailOtp(String emailAddress, String code) =>
       _a.verifyOTP(email: emailAddress.trim(), token: code, type: OtpType.email);
 
-  Future<void> signInGoogle() =>
-      _a.signInWithOAuth(OAuthProvider.google, redirectTo: AppConfig.oauthRedirect);
+  Future<void> signInGoogle() => _a.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: AppConfig.oauthRedirect,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
 
   Future<void> signInApple() =>
       _a.signInWithOAuth(OAuthProvider.apple, redirectTo: AppConfig.oauthRedirect);
