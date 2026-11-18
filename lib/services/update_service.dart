@@ -57,7 +57,15 @@ class UpdateService {
       final update = AppUpdateInfo.fromJson(data);
       final current = await PackageInfo.fromPlatform();
       final installedCode = int.tryParse(current.buildNumber) ?? 0;
-      return update.versionCode > installedCode ? update : null;
+      if (update.versionCode <= installedCode || !update.apkUrl.startsWith('https://')) {
+        return null;
+      }
+
+      // Never announce an update until its release APK is actually reachable.
+      final apkRequest = await client.headUrl(Uri.parse(update.apkUrl));
+      final apkResponse = await apkRequest.close();
+      if (apkResponse.statusCode != HttpStatus.ok) return null;
+      return update;
     } finally {
       client.close(force: true);
     }
