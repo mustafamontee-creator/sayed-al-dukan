@@ -45,7 +45,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _future = context.read<Repo>().notifications();
       _updateFuture = _loadUpdate();
     });
-    await Future.wait([_future, _updateFuture]);
+    await _future;
+    await _updateFuture;
   }
 
   String _statusTitle(BuildContext context, String status) {
