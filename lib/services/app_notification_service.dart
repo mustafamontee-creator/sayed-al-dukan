@@ -6,7 +6,10 @@ class AppNotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
-  static Future<void> initialize({required Future<void> Function() onUpdateTap}) async {
+  static Future<void> initialize({
+    required Future<void> Function() onUpdateTap,
+    bool handleLaunchDetails = true,
+  }) async {
     const settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(),
@@ -30,6 +33,14 @@ class AppNotificationService {
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
+
+    if (handleLaunchDetails) {
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp == true &&
+          launch?.notificationResponse?.payload == 'app_update') {
+        await onUpdateTap();
+      }
+    }
   }
 
   static Future<void> showUpdate({
