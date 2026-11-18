@@ -35,7 +35,8 @@ class ErrorView extends StatelessWidget {
   final bool onDark;
   @override
   Widget build(BuildContext context) {
-    final fg = onDark ? AppColors.white : AppColors.black;
+    final colors = Theme.of(context).colorScheme;
+    final fg = onDark ? colors.onPrimary : colors.onSurface;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -47,7 +48,7 @@ class ErrorView extends StatelessWidget {
             width: 200,
             child: ElevatedButton(
               style: onDark
-                  ? ElevatedButton.styleFrom(backgroundColor: AppColors.black)
+                  ? ElevatedButton.styleFrom(backgroundColor: colors.primary, foregroundColor: colors.onPrimary)
                   : null,
               onPressed: onRetry,
               child: Text(context.t('retry')),
@@ -74,7 +75,7 @@ class NotFoundView extends StatelessWidget {
               style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: onDark ? AppColors.white : AppColors.black)),
+                  color: onDark ? colors.onPrimary : colors.onSurface)),
         ]),
       ),
     );
@@ -104,8 +105,8 @@ class _Blank extends StatelessWidget {
   final IconData? icon;
   @override
   Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(border: Border.all(color: AppColors.black)),
-        child: icon == null ? null : Center(child: Icon(icon, color: AppColors.black)),
+        decoration: BoxDecoration(border: Border.all(color: Theme.of(context).colorScheme.outlineVariant)),
+        child: icon == null ? null : Center(child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant)),
       );
 }
 
@@ -113,5 +114,5 @@ class Line extends StatelessWidget {
   const Line({super.key});
   @override
   Widget build(BuildContext context) =>
-      const Divider(color: AppColors.black, thickness: 1, height: 1);
+      Divider(color: Theme.of(context).dividerColor, thickness: 1, height: 1);
 }
