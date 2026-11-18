@@ -7,8 +7,7 @@ import '../core/strings.dart';
 import '../services/auth_service.dart';
 import '../ui/widgets.dart';
 
-/// Pops with `true` once the customer is signed in, so callers (checkout)
-/// can continue without losing the cart.
+/// Pops with true once the customer is signed in.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,9 +17,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _emailSent = false;
+  bool _obscurePassword = true;
   bool _busy = false;
   String? _err;
+  String? _notice;
   late final AuthService _auth;
   bool _done = false;
 
@@ -42,18 +44,44 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _auth.removeListener(_check);
     _email.dispose();
+    _password.dispose();
     super.dispose();
   }
 
+  bool get _validEmail =>
+      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(_email.text.trim());
+
+  Future<void> _signIn() async {
+    if (!_validEmail) {
+      setState(() => _err = context.t('invalidEmail'));
+      return;
+    }
+    if (_password.text.isEmpty) {
+      setState(() => _err = context.t('passwordRequired'));
+      return;
+    }
+    await _run(() => _auth.signInEmailPassword(_email.text, _password.text));
+  }
+
   Future<void> _sendEmail() async {
-    final email = _email.text.trim();
-    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+    if (!_validEmail) {
       setState(() => _err = context.t('invalidEmail'));
       return;
     }
     await _run(() async {
-      await _auth.sendEmailOtp(email);
+      await _auth.sendEmailOtp(_email.text);
       if (mounted) setState(() => _emailSent = true);
+    });
+  }
+
+  Future<void> _forgotPassword() async {
+    if (!_validEmail) {
+      setState(() => _err = context.t('enterEmailForReset'));
+      return;
+    }
+    await _run(() async {
+      await _auth.sendPasswordReset(_email.text);
+      if (mounted) setState(() => _notice = context.t('resetEmailSent'));
     });
   }
 
@@ -61,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _emailSent = false;
       _err = null;
+      _notice = null;
     });
   }
 
@@ -68,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _busy = true;
       _err = null;
+      _notice = null;
     });
     try {
       await action();
@@ -146,22 +176,76 @@ class _LoginScreenState extends State<LoginScreen> {
                           enabled: !_busy,
                           keyboardType: TextInputType.emailAddress,
                           textDirection: TextDirection.ltr,
-                          textInputAction: TextInputAction.done,
+                          textInputAction: TextInputAction.next,
                           autocorrect: false,
                           enableSuggestions: false,
-                          onSubmitted: (_) => _busy ? null : _sendEmail(),
                           decoration: InputDecoration(
                             labelText: context.t('email'),
                             prefixIcon: const Icon(Icons.mail_outline_rounded),
                           ),
                         ),
                         const SizedBox(height: 14),
+                        TextField(
+                          controller: _password,
+                          enabled: !_busy,
+                          obscureText: _obscurePassword,
+                          textDirection: TextDirection.ltr,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _busy ? null : _signIn(),
+                          decoration: InputDecoration(
+                            labelText: context.t('password'),
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
+                            suffixIcon: IconButton(
+                              tooltip: _obscurePassword
+                                  ? context.t('showPassword')
+                                  : context.t('hidePassword'),
+                              onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton(
+                            onPressed: _busy ? null : _forgotPassword,
+                            child: Text(context.t('forgotPassword')),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
                         FilledButton(
-                          onPressed: _busy ? null : _sendEmail,
+                          onPressed: _busy ? null : _signIn,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(context.t('emailLogin')),
+                            child: Text(context.t('signInWithPassword')),
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: colors.outlineVariant)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                context.t('or'),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: colors.outlineVariant)),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : _sendEmail,
+                          icon: const Icon(Icons.person_add_alt_1_rounded),
+                          label: Text(context.t('createAccountEmail')),
                         ),
                       ] else ...[
                         Container(
@@ -179,7 +263,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               Expanded(
                                 child: Text(
                                   context.t('emailLinkSent'),
-                                  style: theme.textTheme.bodyMedium?.copyWith(color: colors.onSurface),
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colors.onSurface,
+                                  ),
                                 ),
                               ),
                             ],
@@ -245,6 +331,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                       ),
+                      if (_notice != null) ...[
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _notice!,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onPrimaryContainer,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                       if (_err != null) ...[
                         const SizedBox(height: 16),
                         Container(
