@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../core/strings.dart';
 import '../core/format.dart';
-import '../core/theme.dart';
 import '../services/auth_service.dart';
 import '../services/repo.dart';
 import '../services/settings_controller.dart';
@@ -152,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(context.t('logout')),
           ),
         const SizedBox(height: 14),
-        const Center(
+        Center(
           child: Text('الإصدار 1.0.14', style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
       ]),
