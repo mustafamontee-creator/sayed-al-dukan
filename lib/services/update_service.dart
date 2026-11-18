@@ -46,7 +46,7 @@ class UpdateService {
     try {
       final update = await check();
       if (update == null) return;
-      await UpdateNotificationStore.save(
+      await UpdateNotificationStore.saveAvailable(
         versionName: update.versionName,
         versionCode: update.versionCode,
         descriptionAr: update.descriptionAr,
