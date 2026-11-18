@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Patches the generated Android manifest and Gradle release signing."""
+"""Patches the generated Android manifest, Firebase plugins, and release signing."""
 import re
 import sys
 from pathlib import Path
@@ -29,10 +29,30 @@ if "login-callback" not in s:
     s = s.replace("</activity>", intent + "        </activity>", 1)
 manifest.write_text(s, encoding="utf-8")
 
+# Firebase Google Services plugin: declare version in settings, apply in app module.
+settings = Path("android/settings.gradle.kts")
+if not settings.exists():
+    raise SystemExit("Expected android/settings.gradle.kts was not generated")
+st = settings.read_text(encoding="utf-8")
+plugin_decl = '    id("com.google.gms.google-services") version "4.6.0" apply false'
+if "com.google.gms.google-services" not in st:
+    match = re.search(r"plugins\s*\{", st)
+    if not match:
+        raise SystemExit("Could not locate plugins block in settings.gradle.kts")
+    pos = match.end()
+    st = st[:pos] + "\n" + plugin_decl + st[pos:]
+settings.write_text(st, encoding="utf-8")
+
 gradle = Path("android/app/build.gradle.kts")
 if not gradle.exists():
     raise SystemExit("Expected android/app/build.gradle.kts was not generated")
 g = gradle.read_text(encoding="utf-8")
+if 'id("com.google.gms.google-services")' not in g:
+    match = re.search(r'plugins\s*\{', g)
+    if not match:
+        raise SystemExit("Could not locate plugins block in app build.gradle.kts")
+    pos = match.end()
+    g = g[:pos] + '\n    id("com.google.gms.google-services")' + g[pos:]
 if 'create("release")' not in g:
     signing = '''
     signingConfigs {
@@ -51,4 +71,4 @@ if 'create("release")' not in g:
 g = g.replace('signingConfig = signingConfigs.getByName("debug")',
               'signingConfig = signingConfigs.getByName("release")')
 gradle.write_text(g, encoding="utf-8")
-print("Patched Android manifest and release signing configuration")
+print("Patched Android manifest, Firebase plugins, and release signing configuration")
