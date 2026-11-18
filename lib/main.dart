@@ -100,6 +100,8 @@ class SayedApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: buildTheme(s.lang),
+      darkTheme: buildDarkTheme(s.lang),
+      themeMode: s.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const SplashScreen(),
     );
   }
