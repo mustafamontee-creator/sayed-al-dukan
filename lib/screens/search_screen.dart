@@ -50,7 +50,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 });
               },
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search, color: AppColors.black),
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 hintText: context.t('search'),
               ),
             ),
@@ -61,7 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
               builder: (context, s) {
                 if (_c.text.trim().isEmpty) return const SizedBox.shrink();
                 if (s.connectionState != ConnectionState.done) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.black));
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (s.hasError) {
                   return ErrorView(
