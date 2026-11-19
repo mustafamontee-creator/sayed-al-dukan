@@ -203,45 +203,4 @@ class UpdateService {
     );
   }
 
-  static String _safeError(Object error) {
-    final message = error.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
-    return message.length > 180 ? '${message.substring(0, 180)}…' : message;
-  }
-
-  static Future<File> _download(String url, void Function(double progress) onProgress) async {
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 20);
-    try {
-      final request = await client.getUrl(Uri.parse(url));
-      final response = await request.close();
-      if (response.statusCode != HttpStatus.ok) throw HttpException('APK download failed: ${response.statusCode}');
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/sayed-al-dukan-update.apk');
-      final sink = file.openWrite();
-      var received = 0;
-      final total = response.contentLength;
-      await for (final chunk in response) {
-        sink.add(chunk);
-        received += chunk.length;
-        if (total > 0) onProgress(received / total);
-      }
-      await sink.flush();
-      await sink.close();
-      if (received < 1024 * 1024) {
-        await file.delete();
-        throw const HttpException('Downloaded APK is incomplete or too small');
-      }
-      final header = await file.openRead(0, 4).first;
-      if (header.length < 4 ||
-          header[0] != 0x50 ||
-          header[1] != 0x4b ||
-          header[2] != 0x03 ||
-          header[3] != 0x04) {
-        await file.delete();
-        throw const FormatException('The downloaded file is not a valid APK archive');
-      }
-      return file;
-    } finally {
-      client.close(force: true);
-    }
-  }
 }
