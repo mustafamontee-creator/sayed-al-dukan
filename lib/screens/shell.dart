@@ -57,7 +57,7 @@ class _ShellState extends State<Shell> {
             child: SlideTransition(position: slide, child: child),
           );
         },
-        child: KeyedSubtree(key: ValueKey(_i), child: _pages[_i]),
+        child: KeyedSubtree(key: ValueKey('$_i-${context.lang}'), child: _pages[_i]),
       ),
       bottomNavigationBar: Container(
         color: Theme.of(context).scaffoldBackgroundColor,
@@ -93,12 +93,20 @@ class _ShellState extends State<Shell> {
                                 children: [
                                   Icon(items[n].$1, color: _i == n ? colors.primary : colors.onSurface, size: _i == n ? 28 : 24),
                                   const SizedBox(height: 3),
-                                  Text(items[n].$2,
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 260),
+                                    switchInCurve: Curves.easeOutCubic,
+                                    switchOutCurve: Curves.easeInCubic,
+                                    transitionBuilder: (child, animation) =>
+                                        FadeTransition(opacity: animation, child: child),
+                                    child: Text(items[n].$2,
+                                      key: ValueKey('${context.lang}-${items[n].$2}'),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: _i == n ? FontWeight.bold : FontWeight.normal)),
+                                  ),
                                 ],
                               ),
                       ),
