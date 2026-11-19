@@ -67,7 +67,12 @@ class UpdateService {
       var received = 0;
       final sink = file.openWrite();
       try {
-        await for (final chunk in response.timeout(const Duration(seconds: 60))) {\n          received += chunk.length;\n          sink.add(chunk);\n          if (total > 0) progress(received / total);\n        }\n        await sink.flush();
+        await for (final chunk in response.timeout(const Duration(seconds: 60)) {
+          received += chunk.length;
+          sink.add(chunk);
+          if (total > 0) progress(received / total);
+        }
+        await sink.flush();
       } finally { await sink.close(); }
       if (await file.length() < 1024 * 1024) throw const FormatException('Downloaded file is too small');
       final raf = await file.open();
