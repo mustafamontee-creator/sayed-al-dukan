@@ -109,3 +109,24 @@ if "coreLibraryDesugaring(" not in g:
         g += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
 gradle.write_text(g, encoding="utf-8")
 print("Patched Android manifest, Firebase plugins, and release signing configuration")
+
+# Add a native FileProvider-backed installer channel for downloaded APKs.
+app_tag = '<application'
+provider = '''\n        <provider android:name="androidx.core.content.FileProvider"\n            android:authorities="com.sayedaldukan.sayed_al_dukan.updateprovider"\n            android:exported="false" android:grantUriPermissions="true">\n            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"\n                android:resource="@xml/update_file_paths"/>\n        </provider>\n'''
+if "updateprovider" not in s:
+    s = s.replace("</application>", provider + "    </application>", 1)
+manifest.write_text(s, encoding="utf-8")
+xml_dir = Path("android/app/src/main/res/xml")
+xml_dir.mkdir(parents=True, exist_ok=True)
+(xml_dir / "update_file_paths.xml").write_text('''<?xml version="1.0" encoding="utf-8"?>\n<paths xmlns:android="http://schemas.android.com/apk/res/android">\n    <cache-path name="updates" path="."/>\n</paths>\n''', encoding="utf-8")
+main_files = list(Path("android/app/src/main").rglob("MainActivity.kt"))
+if len(main_files) != 1:
+    raise SystemExit(f"Expected one generated MainActivity.kt, found {len(main_files)}")
+main = main_files[0]
+k = main.read_text(encoding="utf-8")
+bridge = '''\nimport android.content.Intent\nimport android.net.Uri\nimport androidx.core.content.FileProvider\nimport io.flutter.embedding.engine.FlutterEngine\nimport io.flutter.plugin.common.MethodChannel\nimport java.io.File\n'''
+if "sayed_al_dukan/apk_installer" not in k:
+    k = k.replace("import io.flutter.embedding.android.FlutterActivity", "import io.flutter.embedding.android.FlutterActivity" + bridge, 1)
+    method = '''\n    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {\n        super.configureFlutterEngine(flutterEngine)\n        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sayed_al_dukan/apk_installer").setMethodCallHandler { call, result ->\n            if (call.method != "installApk") { result.notImplemented(); return@setMethodCallHandler }\n            try {\n                val path = call.argument<String>("path") ?: throw IllegalArgumentException("Missing APK path")\n                val apk = File(path)\n                if (!apk.exists() || apk.length() < 1048576L) throw IllegalArgumentException("APK file missing or incomplete")\n                val uri: Uri = FileProvider.getUriForFile(this, "com.sayedaldukan.sayed_al_dukan.updateprovider", apk)\n                val intent = Intent(Intent.ACTION_VIEW).apply {\n                    setDataAndType(uri, "application/vnd.android.package-archive")\n                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)\n                }\n                startActivity(intent)\n                result.success(true)\n            } catch (e: Exception) { result.error("INSTALL_FAILED", e.message, null) }\n        }\n    }\n'''
+    k = k.replace("\\n}", method + "\\n}", 1)
+    main.write_text(k, encoding="utf-8")
