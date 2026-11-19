@@ -33,8 +33,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          test -s assets/animation/logo_intro.mp4
-          ffmpeg -y -i assets/animation/logo_intro.mp4 \
+          test -s assets/animation/dukan_9x16_4k.mp4
+          ffmpeg -y -i assets/animation/dukan_9x16_4k.mp4 \
             -vf "scale=2160:3840:force_original_aspect_ratio=decrease:flags=lanczos,pad=2160:3840:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p" \
             -c:v libx264 -preset medium -crf 20 -profile:v high -level:v 5.1 \
             -pix_fmt yuv420p -movflags +faststart -an \
