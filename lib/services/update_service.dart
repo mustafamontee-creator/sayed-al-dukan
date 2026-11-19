@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -25,7 +25,7 @@ class AppUpdateInfo {
 
 class UpdateService {
   static const manifestUrl = 'https://raw.githubusercontent.com/mustafamontee-creator/sayed-al-dukan/feature/pro-ui-refresh/app-update.json';
-  static const _installer = MethodChannel('sayed_al_dukan/apk_installer');
+
 
   static Future<void> checkAndNotify() async {
     try {
@@ -117,7 +117,8 @@ class UpdateService {
             setState(() { downloading = true; error = null; progress = 0; });
             try {
               final file = await _download(available, (p) { if (dialogContext.mounted) setState(() => progress = p); });
-              await _installer.invokeMethod<bool>('installApk', {'path': file.path});
+              final result = await OpenFilex.open(file.path, type: 'application/vnd.android.package-archive');
+              if (result.type != ResultType.done) throw Exception(result.message);
               if (dialogContext.mounted) setState(() { downloading = false; });
             } catch (e) {
               if (dialogContext.mounted) setState(() { downloading = false; error = e is PlatformException && e.code == 'INSTALL_PERMISSION_REQUIRED' ? (en ? 'Allow this app to install unknown apps in Android settings, then tap Update now again.' : 'اسمح للتطبيق بتثبيت التطبيقات من إعدادات Android، ثم اضغط تحديث الآن مرة أخرى.') : (en ? 'Update installation could not be started. ${e.toString()}' : 'تعذر بدء تثبيت التحديث. ${e.toString()}'); });
