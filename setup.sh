@@ -12,15 +12,27 @@ mkdir -p android/app
 cp "$tmp/firebase/google-services.json" android/app/google-services.json
 python3 tools/patch_android.py
 
-# Explicitly configure repositories for Gradle plugin and dependency resolution.
+# Configure repository mirrors to reduce Maven Central rate-limit failures.
 python3 - <<'PY'
 from pathlib import Path
 p = Path('android/settings.gradle.kts')
 s = p.read_text()
+mirror = 'maven { url = uri("https://maven.aliyun.com/repository/central") }'
+# Add mirror to the plugin-management repositories and dependency repositories.
+if 'pluginManagement {' in s:
+    start = s.find('pluginManagement {')
+    end = s.find('}', start)
+    block = s[start:end]
+    if mirror not in block:
+        s = s[:start] + s[start:].replace('repositories {', 'repositories {\\n        ' + mirror, 1)
 if 'gradlePluginPortal()' not in s:
-    s = s.replace('repositories {', 'repositories {\n        gradlePluginPortal()', 1)
+    s = s.replace('repositories {', 'repositories {\\n        gradlePluginPortal()', 1)
 if 'dependencyResolutionManagement {' not in s:
-    s += '\ndependencyResolutionManagement {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n'
+    s += '\\ndependencyResolutionManagement {\\n    repositories {\\n        google()\\n        ' + mirror + '\\n        mavenCentral()\\n    }\\n}\\n'
+else:
+    start = s.find('dependencyResolutionManagement {')
+    if mirror not in s[start:]:
+        s = s[:start] + s[start:].replace('repositories {', 'repositories {\\n        ' + mirror, 1)
 p.write_text(s)
 PY
 
