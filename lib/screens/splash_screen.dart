@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,68 +18,64 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   static const _background = Color(0xFF516E96);
   static const _revealAnimationAt = Duration(milliseconds: 500);
-  static const _fadeDuration = Duration(milliseconds: 450);
+  static const _fadeDuration = Duration(milliseconds: 350);
 
   VideoPlayerController? _videoController;
   late final Future<void> _updateCheck;
   bool _showStaticLogo = true;
   bool _fadingOut = false;
+  bool _readyToEnter = false;
   bool _finishing = false;
+  bool _videoFailed = false;
 
   @override
   void initState() {
     super.initState();
     _updateCheck = UpdateService.checkAndNotify().catchError((_) {});
-    _startLogoAnimation();
+    _waitUntilAppReady();
+    _startIntroVideo();
   }
 
-  Future<void> _startLogoAnimation() async {
-    VideoPlayerController? controller;
+  Future<void> _waitUntilAppReady() async {
+    await _updateCheck;
+    if (!mounted) return;
+    _readyToEnter = true;
+    if (_videoFailed) {
+      _finishIntro();
+    }
+    // If the clip is playing, the listener waits for its end. It is never
+    // interrupted halfway through when the app becomes ready.
+  }
+
+  Future<void> _startIntroVideo() async {
+    final controller = VideoPlayerController.asset(
+      'assets/animation/logo_intro_4k30.mp4',
+    );
+    _videoController = controller;
     try {
-      controller = VideoPlayerController.asset(
-        'assets/animation/logo_intro_4k120.mp4',
-      );
-      _videoController = controller;
       await controller.initialize();
       if (!mounted) {
         await controller.dispose();
         return;
       }
-
       await controller.setLooping(false);
       await controller.setVolume(0);
       controller.addListener(_handleVideoProgress);
       setState(() {});
       await controller.play();
     } catch (_) {
-      if (controller != null) {
-        controller.removeListener(_handleVideoProgress);
-        await controller.dispose();
-      }
+      controller.removeListener(_handleVideoProgress);
+      await controller.dispose();
       if (!mounted) return;
-      // Fall back to 4K/30fps on devices that cannot decode 4K/120fps.
-      final fallback = VideoPlayerController.asset(
-        'assets/animation/logo_intro_4k30.mp4',
-      );
-      _videoController = fallback;
-      try {
-        await fallback.initialize();
-        if (!mounted) {
-          await fallback.dispose();
-          return;
-        }
-        await fallback.setLooping(false);
-        await fallback.setVolume(0);
-        fallback.addListener(_handleVideoProgress);
-        setState(() {});
-        await fallback.play();
-      } catch (_) {
-        fallback.removeListener(_handleVideoProgress);
-        await fallback.dispose();
-        if (!mounted) return;
-        _videoController = null;
-        await Future.delayed(const Duration(milliseconds: 900));
-        if (mounted) _finishIntro();
+      _videoController = null;
+      _videoFailed = true;
+      if (_readyToEnter) {
+        _finishIntro();
+      } else {
+        // Keep startup recoverable if video decoding fails on a device.
+        unawaited(_updateCheck.then((_) {
+          if (mounted) _finishIntro();
+        }));
       }
     }
   }
@@ -93,10 +91,29 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() => _showStaticLogo = false);
     }
 
-    if (value.hasError ||
-        (!value.isPlaying &&
-            value.position >= value.duration - const Duration(milliseconds: 80))) {
+    if (value.hasError) {
+      _videoFailed = true;
+      if (_readyToEnter) _finishIntro();
+      return;
+    }
+
+    final reachedEnd = !value.isPlaying &&
+        value.duration > Duration.zero &&
+        value.position >= value.duration - const Duration(milliseconds: 100);
+    if (!reachedEnd) return;
+
+    if (_readyToEnter) {
       _finishIntro();
+    } else {
+      // Loop only while the app is still preparing. Once ready, finish the
+      // current complete play-through and then open the app.
+      controller.seekTo(Duration.zero).then((_) {
+        if (mounted && !_finishing && !_readyToEnter) {
+          controller.play();
+        } else if (mounted && !_finishing && _readyToEnter) {
+          _finishIntro();
+        }
+      });
     }
   }
 
@@ -104,17 +121,16 @@ class _SplashScreenState extends State<SplashScreen> {
     if (_finishing) return;
     _finishing = true;
 
-    if (mounted) {
-      setState(() => _fadingOut = true);
-    }
+    final controller = _videoController;
+    controller?.removeListener(_handleVideoProgress);
+    if (mounted) setState(() => _fadingOut = true);
     await Future.delayed(_fadeDuration);
-    await _updateCheck;
     if (!mounted) return;
 
     final navigator = Navigator.of(context);
     navigator.pushReplacement(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (_, __, ___) => const Shell(),
         transitionsBuilder: (_, animation, __, child) =>
             FadeTransition(opacity: animation, child: child),
