@@ -136,10 +136,21 @@ class NetImage extends StatelessWidget {
     return CachedNetworkImage(
       imageUrl: url!,
       fit: fit,
-      placeholder: (_, __) => const _Blank(null),
-      errorWidget: (_, __, ___) => const _Blank(Icons.broken_image_outlined),
+      placeholder: (_, __) => const _ImageFallback(Icons.person_outline_rounded),
+      errorWidget: (_, __, ___) => const _ImageFallback(Icons.person_outline_rounded),
     );
   }
+}
+
+class _ImageFallback extends StatelessWidget {
+  const _ImageFallback(this.icon);
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) => Container(
+    color: const Color(0xFFE8F0F7),
+    alignment: Alignment.center,
+    child: Icon(icon, size: 34, color: const Color(0xFF4E759C)),
+  );
 }
 
 class _Blank extends StatelessWidget {
