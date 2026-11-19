@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _startIntroVideo() async {
     final controller = VideoPlayerController.asset(
-      'assets/animation/logo_intro_4k30.mp4',
+      'assets/animation/dukan_9x16_4k.mp4',
     );
     _videoController = controller;
     try {
