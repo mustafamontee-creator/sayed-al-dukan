@@ -120,7 +120,7 @@ class UpdateService {
               await _installer.invokeMethod<bool>('installApk', {'path': file.path});
               if (dialogContext.mounted) setState(() { downloading = false; });
             } catch (e) {
-              if (dialogContext.mounted) setState(() { downloading = false; error = en ? 'Update installation could not be started. ${e.toString()}' : 'تعذر بدء تثبيت التحديث. ${e.toString()}'; });
+              if (dialogContext.mounted) setState(() { downloading = false; error = e is PlatformException && e.code == 'INSTALL_PERMISSION_REQUIRED' ? (en ? 'Allow this app to install unknown apps in Android settings, then tap Update now again.' : 'اسمح للتطبيق بتثبيت التطبيقات من إعدادات Android، ثم اضغط تحديث الآن مرة أخرى.') : (en ? 'Update installation could not be started. ${e.toString()}' : 'تعذر بدء تثبيت التحديث. ${e.toString()}'); });
             }
           }, child: Text(downloading ? (en ? 'Downloading…' : 'جارٍ التحميل…') : (en ? 'Update now' : 'تحديث الآن'))),
         ],
