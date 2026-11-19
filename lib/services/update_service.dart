@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'update_notification_store.dart';
@@ -127,7 +125,6 @@ class UpdateService {
       barrierDismissible: true,
       builder: (dialogContext) {
         var downloading = false;
-        var progress = 0.0;
         String? error;
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) => AlertDialog(
@@ -140,10 +137,6 @@ class UpdateService {
                 Text(isEnglish ? 'Version ${availableUpdate.versionName}' : 'الإصدار ${availableUpdate.versionName}'),
                 const SizedBox(height: 9),
                 Text(isEnglish ? availableUpdate.descriptionEn : availableUpdate.descriptionAr),
-                if (downloading) ...[
-                  const SizedBox(height: 18),
-                  LinearProgressIndicator(value: progress > 0 ? progress : null),
-                ],
                 if (error != null) ...[
                   const SizedBox(height: 10),
                   Text(error!, style: const TextStyle(color: Colors.red)),
@@ -172,49 +165,33 @@ class UpdateService {
                     return;
                   }
                   setDialogState(() { downloading = true; error = null; });
-                  File downloadedFile;
                   try {
-                    downloadedFile = await _download(availableUpdate.apkUrl, (value) {
-                      if (dialogContext.mounted) setDialogState(() => progress = value);
-                    });
-                  } catch (e) {
+                    final opened = await launchUrl(
+                      Uri.parse(availableUpdate.apkUrl),
+                      mode: LaunchMode.externalApplication,
+                    );
                     if (dialogContext.mounted) {
                       setDialogState(() {
                         downloading = false;
-                        error = isEnglish
-                            ? 'Download failed: ${_safeError(e)}'
-                            : 'فشل تنزيل ملف التحديث: ${_safeError(e)}';
+                        if (!opened) {
+                          error = isEnglish
+                              ? 'Could not open the download link.'
+                              : 'تعذر فتح رابط تنزيل التحديث.';
+                        }
                       });
                     }
-                    return;
-                  }
-
-                  if (!dialogContext.mounted) return;
-                  try {
-                    final result = await OpenFilex.open(
-                      downloadedFile.path,
-                      type: 'application/vnd.android.package-archive',
-                    );
-                    if (!dialogContext.mounted) return;
-                    setDialogState(() {
-                      downloading = false;
-                      if (result.type != ResultType.done) {
-                        error = isEnglish
-                            ? 'The update was downloaded, but Android could not open the installer: ${result.message}'
-                            : 'تم تنزيل التحديث، لكن تعذر فتح شاشة التثبيت: ${result.message}';
-                      }
-                    });
                   } catch (e) {
                     if (dialogContext.mounted) {
                       setDialogState(() {
                         downloading = false;
                         error = isEnglish
-                            ? 'The update downloaded, but the installer could not be opened: ${_safeError(e)}'
-                            : 'تم تنزيل التحديث، لكن تعذر فتح شاشة التثبيت: ${_safeError(e)}';
+                            ? 'Could not open the download link: $e'
+                            : 'تعذر فتح رابط تنزيل التحديث: $e';
                       });
                     }
                   }
                 },
+
                 child: downloading
                     ? Text(isEnglish ? 'Downloading…' : 'جارٍ التحميل…')
                     : Text(isEnglish ? 'Update now' : 'تحديث الآن'),
