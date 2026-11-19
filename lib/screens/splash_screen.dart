@@ -18,9 +18,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   static const _background = Color(0xFF516E96);
   static const _fadeDuration = Duration(milliseconds: 350);
+  static const _revealAnimationAt = Duration(milliseconds: 500);
 
   VideoPlayerController? _videoController;
   late final Future<void> _updateCheck;
+  bool _showStaticLogo = true;
   bool _fadingOut = false;
   bool _readyToEnter = false;
   bool _finishing = false;
@@ -85,6 +87,9 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     final value = controller.value;
+    if (_showStaticLogo && value.position >= _revealAnimationAt) {
+      setState(() => _showStaticLogo = false);
+    }
     if (value.hasError) {
       _videoFailed = true;
       if (_readyToEnter) _finishIntro();
@@ -161,22 +166,34 @@ class _SplashScreenState extends State<SplashScreen> {
             opacity: _fadingOut ? 0 : 1,
             duration: _fadeDuration,
             curve: Curves.easeOut,
-            child: videoReady
-                ? FittedBox(
-                    fit: BoxFit.contain,
-                    child: SizedBox(
-                      width: controller!.value.size.width,
-                      height: controller.value.size.height,
-                      child: VideoPlayer(controller),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (videoReady)
+                  Positioned.fill(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: controller!.value.size.width,
+                        height: controller.value.size.height,
+                        child: VideoPlayer(controller),
+                      ),
                     ),
-                  )
-                : Image.asset(
+                  ),
+                AnimatedOpacity(
+                  opacity: (!videoReady || _showStaticLogo) ? 1 : 0,
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeInOut,
+                  child: Image.asset(
                     'assets/images/splash_logo.webp',
                     fit: BoxFit.contain,
                     width: MediaQuery.of(context).size.width * 0.72,
                     height: MediaQuery.of(context).size.width * 0.72,
                     gaplessPlayback: true,
                   ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
