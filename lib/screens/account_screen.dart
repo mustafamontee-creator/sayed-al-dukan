@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../core/format.dart';
 import '../core/strings.dart';
@@ -22,7 +23,6 @@ class _AccountScreenState extends State<AccountScreen> {
   String? _uid;
 
   static const yellow = Color(0xFFFFC94A);
-  static const red = Color(0xFFD94747);
 
   void _reload() => setState(() => _f = context.read<Repo>().addresses());
 
@@ -37,30 +37,67 @@ class _AccountScreenState extends State<AccountScreen> {
     if (mounted) _reload();
   }
 
-  Future<void> _logout(AuthService auth) async {
-    final yes = await showDialog<bool>(
+  Future<void> _editProfile(AuthService auth) async {
+    final metadata = auth.user?.userMetadata ?? {};
+    final name = TextEditingController(text: (metadata['full_name'] ?? metadata['name'] ?? '').toString());
+    final phone = TextEditingController(text: (metadata['contact_phone'] ?? '').toString());
+    var saving = false;
+    final saved = await showDialog<bool>(
       context: context,
-      builder: (d) => AlertDialog(
-        title: Text(context.t('logout')),
-        content: const Text('هل تريد تسجيل الخروج من حسابك؟'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(d, false), child: Text(context.t('cancel'))),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: red, foregroundColor: Colors.white),
-            onPressed: () => Navigator.pop(d, true),
-            child: Text(context.t('logout')),
-          ),
-        ],
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(context.t('edit') + ' ' + context.t('account')),
+          content: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: name, textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(labelText: context.t('name'))),
+            const SizedBox(height: 12),
+            TextField(controller: phone, keyboardType: TextInputType.phone,
+              textDirection: TextDirection.ltr,
+              decoration: InputDecoration(labelText: context.t('contactPhone'))),
+          ]),
+          actions: [
+            TextButton(onPressed: saving ? null : () => Navigator.pop(dialogContext, false),
+              child: Text(context.t('cancel'))),
+            FilledButton(
+              onPressed: saving ? null : () async {
+                if (name.text.trim().isEmpty) return;
+                setDialogState(() => saving = true);
+                try {
+                  await auth.updateProfile(fullName: name.text, contactPhone: phone.text);
+                  if (dialogContext.mounted) Navigator.pop(dialogContext, true);
+                } catch (e) {
+                  if (dialogContext.mounted) {
+                    setDialogState(() => saving = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(friendlyError(context, e))));
+                  }
+                }
+              },
+              child: saving ? const SizedBox(width: 18, height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2)) : Text(context.t('save')),
+            ),
+          ],
+        ),
       ),
     );
-    if (yes != true) return;
+    name.dispose();
+    phone.dispose();
+    if (saved == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.t('saved'))));
+    }
+  }
+
+  Future<void> _pickAvatar(AuthService auth) async {
     try {
-      await auth.signOut();
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery, imageQuality: 86, maxWidth: 1200, maxHeight: 1200);
+      if (picked == null) return;
+      await auth.updateAvatar(await picked.readAsBytes());
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.lang == 'en' ? 'Profile photo updated' : 'تم تحديث الصورة الشخصية')));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(friendlyError(context, e))),
-      );
+        SnackBar(content: Text(friendlyError(context, e))));
     }
   }
 
@@ -224,6 +261,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final repo = context.read<Repo>();
     final metadata = auth.user?.userMetadata ?? {};
     final displayName = (metadata['full_name'] ?? metadata['name'] ?? '').toString().trim();
+    final contactPhone = (metadata['contact_phone'] ?? '').toString().trim();
     final emailVerified = auth.user?.emailConfirmedAt?.isNotEmpty ?? false;
     final phoneVerified = auth.user?.phoneConfirmedAt?.isNotEmpty ?? false;
     final verified = emailVerified || phoneVerified;
@@ -240,11 +278,19 @@ class _AccountScreenState extends State<AccountScreen> {
               Align(alignment: AlignmentDirectional.centerStart,
                 child: Text(context.t('account'), style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600))),
               const SizedBox(height: 14),
-              Container(width: 88, height: 88, padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white70, width: 2)),
-                child: ClipOval(child: auth.avatarUrl != null
-                  ? NetImage(auth.avatarUrl)
-                  : Container(color: blueSoftColor, child: const Icon(Icons.person_rounded, color: AppColors.blue, size: 52)))),
+              GestureDetector(
+                onTap: () => _pickAvatar(auth),
+                child: Stack(alignment: AlignmentDirectional.bottomEnd, children: [
+                  Container(width: 88, height: 88, padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.white70, width: 2)),
+                    child: ClipOval(child: auth.avatarUrl != null
+                      ? NetImage(auth.avatarUrl)
+                      : Container(color: blueSoftColor, child: const Icon(Icons.person_rounded, color: AppColors.blue, size: 52)))),
+                  Container(padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    child: const Icon(Icons.camera_alt_rounded, color: AppColors.blue, size: 16)),
+                ]),
+              ),
               const SizedBox(height: 12),
               Text(displayName.isEmpty ? context.t('account') : displayName,
                 style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -252,9 +298,10 @@ class _AccountScreenState extends State<AccountScreen> {
                 const SizedBox(height: 4),
                 Text(maskEmail(auth.email), style: const TextStyle(color: Colors.white70, fontSize: 13)),
               ],
-              if (auth.phone != null) ...[
+              if (contactPhone.isNotEmpty || auth.phone != null) ...[
                 const SizedBox(height: 3),
-                Text(maskPhone(auth.phone), textDirection: TextDirection.ltr, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                Text(contactPhone.isNotEmpty ? contactPhone : maskPhone(auth.phone),
+                  textDirection: TextDirection.ltr, style: const TextStyle(color: Colors.white70, fontSize: 13)),
               ],
               const SizedBox(height: 14),
               Container(
@@ -280,12 +327,19 @@ class _AccountScreenState extends State<AccountScreen> {
                 if (displayName.isNotEmpty) Divider(height: 1, color: lineColor),
                 _info(Icons.email_outlined, context.t('email'), maskEmail(auth.email)),
               ],
-              if (auth.phone != null) ...[
+              if (contactPhone.isNotEmpty || auth.phone != null) ...[
                 Divider(height: 1, color: lineColor),
-                _info(Icons.phone_outlined, context.t('phone'), maskPhone(auth.phone)),
+                _info(Icons.phone_outlined, context.t('contactPhone'),
+                    contactPhone.isNotEmpty ? contactPhone : maskPhone(auth.phone)),
               ],
             ]),
           ),
+          const SizedBox(height: 12),
+          SizedBox(height: 50, child: OutlinedButton.icon(
+            onPressed: () => _editProfile(auth),
+            icon: const Icon(Icons.edit_outlined),
+            label: Text(context.t('edit') + ' ' + context.t('account')),
+          )),
           const SizedBox(height: 22),
           _section(context.t('addresses'), Icons.location_on_outlined),
           FutureBuilder<List<Address>>(
@@ -388,14 +442,6 @@ class _AccountScreenState extends State<AccountScreen> {
               label: Text(context.t('changePassword'), style: const TextStyle(fontWeight: FontWeight.w800)),
             ),
           ),
-          const SizedBox(height: 22),
-          SizedBox(height: 52, child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(foregroundColor: red, side: BorderSide(color: red.withValues(alpha: 0.45)),
-              backgroundColor: isDark ? const Color(0xFF3B2525) : const Color(0xFFFFF2F1), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-            onPressed: () => _logout(auth),
-            icon: const Icon(Icons.logout_rounded),
-            label: Text(context.t('logout'), style: const TextStyle(fontWeight: FontWeight.w800)),
-          )),
         ],
       )),
     );
