@@ -12,6 +12,18 @@ mkdir -p android/app
 cp "$tmp/firebase/google-services.json" android/app/google-services.json
 python3 tools/patch_android.py
 
+# Explicitly configure repositories for Gradle plugin and dependency resolution.
+python3 - <<'PY'
+from pathlib import Path
+p = Path('android/settings.gradle.kts')
+s = p.read_text()
+if 'gradlePluginPortal()' not in s:
+    s = s.replace('repositories {', 'repositories {\n        gradlePluginPortal()', 1)
+if 'dependencyResolutionManagement {' not in s:
+    s += '\ndependencyResolutionManagement {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n'
+p.write_text(s)
+PY
+
 # Flutter 3.38 generates Kotlin-DSL Gradle files. Keep the wrapper current.
 python3 - <<'PY'
 from pathlib import Path
