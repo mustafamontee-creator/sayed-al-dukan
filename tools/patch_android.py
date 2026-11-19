@@ -185,7 +185,7 @@ if "sayed_al_dukan/apk_installer" not in k:
     }
 '''
     # Insert immediately before the class's final closing brace.
-    class_end = k.rfind("\n}")
+    class_end = k.rfind("}")
     if class_end < 0:
         raise SystemExit("Could not locate MainActivity class closing brace")
     k = k[:class_end] + "\n" + method + k[class_end:]
