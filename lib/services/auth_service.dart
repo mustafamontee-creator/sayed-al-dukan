@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,6 +15,9 @@ class AuthService extends ChangeNotifier {
   bool get loggedIn => user != null;
   String? get email => user?.email;
   String? get phone => (user?.phone ?? '').isEmpty ? null : user!.phone;
+  String? get contactPhone => (user?.userMetadata?['contact_phone'] ?? '').toString().trim().isEmpty
+      ? null
+      : user!.userMetadata!['contact_phone'].toString();
   String? get avatarUrl {
     final m = user?.userMetadata;
     return (m?['avatar_url'] ?? m?['picture']) as String?;
@@ -71,6 +75,45 @@ class AuthService extends ChangeNotifier {
 
   Future<void> signInApple() =>
       _a.signInWithOAuth(OAuthProvider.apple, redirectTo: AppConfig.oauthRedirect);
+
+  Future<void> updateProfile({
+    required String fullName,
+    required String contactPhone,
+  }) async {
+    final current = user;
+    if (current == null) throw StateError('not_authenticated');
+    await _a.updateUser(UserAttributes(data: {
+      'full_name': fullName.trim(),
+      'contact_phone': contactPhone.trim(),
+    }));
+    await Supabase.instance.client.from('profiles').update({
+      'full_name': fullName.trim(),
+      'contact_phone': contactPhone.trim(),
+    }).eq('id', current.id);
+    user = _a.currentUser;
+    notifyListeners();
+  }
+
+  Future<void> updateAvatar(List<int> bytes) async {
+    final current = user;
+    if (current == null) throw StateError('not_authenticated');
+    final path = '${current.id}/avatar.jpg';
+    await Supabase.instance.client.storage.from('profile-avatars').uploadBinary(
+      path,
+      Uint8List.fromList(bytes),
+      fileOptions: const FileOptions(
+        upsert: true,
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+      ),
+    );
+    final url = Supabase.instance.client.storage
+        .from('profile-avatars')
+        .getPublicUrl(path);
+    await _a.updateUser(UserAttributes(data: {'avatar_url': url}));
+    user = _a.currentUser;
+    notifyListeners();
+  }
 
   Future<void> changePassword(String newPassword) =>
       _a.updateUser(UserAttributes(password: newPassword));
