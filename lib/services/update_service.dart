@@ -67,7 +67,7 @@ class UpdateService {
       var received = 0;
       final sink = file.openWrite();
       try {
-        await for (final chunk in response.timeout(const Duration(seconds: 60)) {
+        await for (final chunk in response.timeout(const Duration(seconds: 60))) {
           received += chunk.length;
           sink.add(chunk);
           if (total > 0) progress(received / total);
