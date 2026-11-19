@@ -17,12 +17,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   static const _background = Color(0xFF516E96);
-  static const _revealAnimationAt = Duration(milliseconds: 500);
   static const _fadeDuration = Duration(milliseconds: 350);
 
   VideoPlayerController? _videoController;
   late final Future<void> _updateCheck;
-  bool _showStaticLogo = true;
   bool _fadingOut = false;
   bool _readyToEnter = false;
   bool _finishing = false;
@@ -87,10 +85,6 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     final value = controller.value;
-    if (_showStaticLogo && value.position >= _revealAnimationAt) {
-      setState(() => _showStaticLogo = false);
-    }
-
     if (value.hasError) {
       _videoFailed = true;
       if (_readyToEnter) _finishIntro();
@@ -158,7 +152,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     final controller = _videoController;
     final videoReady = controller?.value.isInitialized ?? false;
-    final logoSize = MediaQuery.of(context).size.width * 0.82;
 
     return Scaffold(
       backgroundColor: _background,
@@ -168,21 +161,22 @@ class _SplashScreenState extends State<SplashScreen> {
             opacity: _fadingOut ? 0 : 1,
             duration: _fadeDuration,
             curve: Curves.easeOut,
-            child: SizedBox.square(
-              dimension: logoSize,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (videoReady) VideoPlayer(controller!),
-                  if (_showStaticLogo || !videoReady)
-                    Image.asset(
-                      'assets/images/splash_logo.webp',
-                      fit: BoxFit.contain,
-                      gaplessPlayback: true,
+            child: videoReady
+                ? FittedBox(
+                    fit: BoxFit.contain,
+                    child: SizedBox(
+                      width: controller!.value.size.width,
+                      height: controller.value.size.height,
+                      child: VideoPlayer(controller),
                     ),
-                ],
-              ),
-            ),
+                  )
+                : Image.asset(
+                    'assets/images/splash_logo.webp',
+                    fit: BoxFit.contain,
+                    width: MediaQuery.of(context).size.width * 0.72,
+                    height: MediaQuery.of(context).size.width * 0.72,
+                    gaplessPlayback: true,
+                  ),
           ),
         ),
       ),
