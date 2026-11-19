@@ -124,69 +124,9 @@ if len(main_files) != 1:
     raise SystemExit(f"Expected one generated MainActivity.kt, found {len(main_files)}")
 main = main_files[0]
 k = main.read_text(encoding="utf-8")
-imports = [
-    "import android.content.Intent",
-    "import android.net.Uri",
-    "import android.provider.Settings",
-    "import androidx.core.content.FileProvider",
-    "import io.flutter.embedding.engine.FlutterEngine",
-    "import io.flutter.plugin.common.MethodChannel",
-    "import java.io.File",
-]
-# Insert imports after the package declaration without relying on an exact Flutter import string.
-package_match = re.search(r"^package [^\n]+\n", k, re.MULTILINE)
-if not package_match:
-    raise SystemExit("Could not find package declaration in generated MainActivity.kt")
-missing_imports = [line for line in imports if line not in k]
-if missing_imports:
-    k = k[:package_match.end()] + "\n" + "\n".join(missing_imports) + k[package_match.end():]
+bridge = '''\nimport android.content.Intent\nimport android.net.Uri\nimport androidx.core.content.FileProvider\nimport io.flutter.embedding.engine.FlutterEngine\nimport io.flutter.plugin.common.MethodChannel\nimport java.io.File\n'''
 if "sayed_al_dukan/apk_installer" not in k:
-    method = '''
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sayed_al_dukan/apk_installer").setMethodCallHandler { call, result ->
-            if (call.method != "installApk") {
-                result.notImplemented()
-                return@setMethodCallHandler
-            }
-            try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O &&
-                    !packageManager.canRequestPackageInstalls()) {
-                    val settingsIntent = Intent(
-                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                        Uri.parse("package:" + packageName)
-                    ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
-                    startActivity(settingsIntent)
-                    result.error("PERMISSION_REQUIRED", "Allow installing unknown apps, then return and tap Update now again.", null)
-                    return@setMethodCallHandler
-                }
-                val path = call.argument<String>("path")
-                    ?: throw IllegalArgumentException("Missing APK path")
-                val apk = File(path)
-                if (!apk.isFile || apk.length() < 1048576L) {
-                    throw IllegalArgumentException("APK file missing or incomplete")
-                }
-                val uri = FileProvider.getUriForFile(
-                    this,
-                    "com.sayedaldukan.sayed_al_dukan.updateprovider",
-                    apk
-                )
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/vnd.android.package-archive")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(intent)
-                result.success(true)
-            } catch (e: Exception) {
-                result.error("INSTALL_FAILED", e.message, null)
-            }
-        }
-    }
-'''
-    # Insert immediately before the class's final closing brace.
-    class_end = k.rfind("}")
-    if class_end < 0:
-        raise SystemExit("Could not locate MainActivity class closing brace")
-    k = k[:class_end] + "\n" + method + k[class_end:]
-main.write_text(k, encoding="utf-8")
+    k = k.replace("import io.flutter.embedding.android.FlutterActivity", "import io.flutter.embedding.android.FlutterActivity" + bridge, 1)
+    method = '''\n    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {\n        super.configureFlutterEngine(flutterEngine)\n        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sayed_al_dukan/apk_installer").setMethodCallHandler { call, result ->\n            if (call.method != "installApk") { result.notImplemented(); return@setMethodCallHandler }\n            try {\n                val path = call.argument<String>("path") ?: throw IllegalArgumentException("Missing APK path")\n                val apk = File(path)\n                if (!apk.exists() || apk.length() < 1048576L) throw IllegalArgumentException("APK file missing or incomplete")\n                val uri: Uri = FileProvider.getUriForFile(this, "com.sayedaldukan.sayed_al_dukan.updateprovider", apk)\n                val intent = Intent(Intent.ACTION_VIEW).apply {\n                    setDataAndType(uri, "application/vnd.android.package-archive")\n                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)\n                }\n                startActivity(intent)\n                result.success(true)\n            } catch (e: Exception) { result.error("INSTALL_FAILED", e.message, null) }\n        }\n    }\n'''
+    k = k.replace("\n}", method + "\n}", 1)
+    main.write_text(k, encoding="utf-8")
