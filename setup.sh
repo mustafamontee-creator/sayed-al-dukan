@@ -18,21 +18,26 @@ from pathlib import Path
 p = Path('android/settings.gradle.kts')
 s = p.read_text()
 mirror = 'maven { url = uri("https://maven.aliyun.com/repository/central") }'
-# Add mirror to the plugin-management repositories and dependency repositories.
-if 'pluginManagement {' in s:
-    start = s.find('pluginManagement {')
+
+# Add the mirror to plugin-management repositories.
+start = s.find('pluginManagement {')
+if start >= 0:
     end = s.find('}', start)
     block = s[start:end]
     if mirror not in block:
-        s = s[:start] + s[start:].replace('repositories {', 'repositories {\\n        ' + mirror, 1)
+        s = s[:start] + s[start:].replace('repositories {', 'repositories {\n        ' + mirror, 1)
+
 if 'gradlePluginPortal()' not in s:
-    s = s.replace('repositories {', 'repositories {\\n        gradlePluginPortal()', 1)
+    s = s.replace('repositories {', 'repositories {\n        gradlePluginPortal()', 1)
+
+# Ensure dependency repositories also include the mirror.
 if 'dependencyResolutionManagement {' not in s:
-    s += '\\ndependencyResolutionManagement {\\n    repositories {\\n        google()\\n        ' + mirror + '\\n        mavenCentral()\\n    }\\n}\\n'
+    s += '\ndependencyResolutionManagement {\n    repositories {\n        google()\n        ' + mirror + '\n        mavenCentral()\n    }\n}\n'
 else:
     start = s.find('dependencyResolutionManagement {')
     if mirror not in s[start:]:
-        s = s[:start] + s[start:].replace('repositories {', 'repositories {\\n        ' + mirror, 1)
+        s = s[:start] + s[start:].replace('repositories {', 'repositories {\n        ' + mirror, 1)
+
 p.write_text(s)
 PY
 
