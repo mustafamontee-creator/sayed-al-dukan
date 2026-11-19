@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'update_notification_store.dart';
 
@@ -150,6 +151,14 @@ class UpdateService {
               ],
             ),
             actions: [
+              if (error != null)
+                TextButton(
+                  onPressed: downloading ? null : () async {
+                    await launchUrl(Uri.parse(availableUpdate.apkUrl),
+                      mode: LaunchMode.externalApplication);
+                  },
+                  child: Text(isEnglish ? 'Open browser download' : 'تنزيل عبر المتصفح'),
+                ),
               TextButton(
                 onPressed: downloading ? null : () => Navigator.pop(dialogContext),
                 child: Text(isEnglish ? 'Later' : 'لاحقاً'),
@@ -244,9 +253,14 @@ class UpdateService {
         await file.delete();
         throw const HttpException('Downloaded APK is incomplete or too small');
       }
-      if (total > 0 && received != total) {
+      final header = await file.openRead(0, 4).first;
+      if (header.length < 4 ||
+          header[0] != 0x50 ||
+          header[1] != 0x4b ||
+          header[2] != 0x03 ||
+          header[3] != 0x04) {
         await file.delete();
-        throw HttpException('Incomplete APK: received $received of $total bytes');
+        throw const FormatException('The downloaded file is not a valid APK archive');
       }
       return file;
     } finally {
