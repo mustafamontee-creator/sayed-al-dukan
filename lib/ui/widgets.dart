@@ -100,7 +100,7 @@ class BrandedEmptyView extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 19,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.1,
                 color: onDark ? colors.onPrimary : colors.onSurface,
