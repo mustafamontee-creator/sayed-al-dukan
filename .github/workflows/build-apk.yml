@@ -91,3 +91,5 @@ jobs:
             --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             --header "Content-Type: application/json" \
             --data "$PAYLOAD"
+
+# Build-only push trigger: artifact is uploaded; publishing remains manual.
