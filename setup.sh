@@ -18,14 +18,15 @@ from pathlib import Path
 p = Path('android/settings.gradle.kts')
 s = p.read_text()
 mirror = 'maven { url = uri("https://maven.aliyun.com/repository/central") }'
+nl = chr(10)
 if 'dependencyResolutionManagement {' in s:
     start = s.find('dependencyResolutionManagement {')
     tail = s[start:]
     if mirror not in tail:
-        tail = tail.replace('repositories {', 'repositories {\\n        ' + mirror, 1)
+        tail = tail.replace('repositories {', 'repositories {' + nl + '        ' + mirror, 1)
         s = s[:start] + tail
 else:
-    s += '\\ndependencyResolutionManagement {\\n    repositories {\\n        google()\\n        ' + mirror + '\\n        mavenCentral()\\n    }\\n}\\n'
+    s += nl + 'dependencyResolutionManagement {' + nl + '    repositories {' + nl + '        google()' + nl + '        ' + mirror + nl + '        mavenCentral()' + nl + '    }' + nl + '}' + nl
 p.write_text(s)
 PY
 
