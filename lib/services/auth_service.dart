@@ -97,7 +97,7 @@ class AuthService extends ChangeNotifier {
   Future<void> updateAvatar(List<int> bytes) async {
     final current = user;
     if (current == null) throw StateError('not_authenticated');
-    final path = '${current.id}/avatar.jpg';
+    final path = '${current.id}/avatar-${DateTime.now().millisecondsSinceEpoch}.jpg';
     await Supabase.instance.client.storage.from('profile-avatars').uploadBinary(
       path,
       Uint8List.fromList(bytes),
