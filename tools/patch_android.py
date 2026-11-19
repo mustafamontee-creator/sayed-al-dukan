@@ -17,7 +17,7 @@ add = "".join(f'    <uses-permission android:name="{p}"/>\n' for p in perms if p
 if add:
     s = s.replace("<application", add + "    <application", 1)
 
-s = re.sub(r'android:label="[^"]*"', 'android:label="سيد الدكان"', s, count=1)
+s = re.sub(r'android:label="[^"]*"', 'android:label="الدكان"', s, count=1)
 
 # Remove an obsolete Google Maps key entry if this project was previously generated.
 s = re.sub(
