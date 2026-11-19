@@ -50,7 +50,7 @@ settings = Path("android/settings.gradle.kts")
 if not settings.exists():
     raise SystemExit("Expected android/settings.gradle.kts was not generated")
 st = settings.read_text(encoding="utf-8")
-plugin_decl = '    id("com.google.gms.google-services") version "4.6.0" apply false'
+plugin_decl = '    id("com.google.gms.google-services") version "4.4.2" apply false'
 if "com.google.gms.google-services" not in st:
     match = re.search(r"plugins\s*\{", st)
     if not match:
