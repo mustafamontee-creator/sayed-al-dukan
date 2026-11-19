@@ -51,7 +51,9 @@ if not settings.exists():
     raise SystemExit("Expected android/settings.gradle.kts was not generated")
 st = settings.read_text(encoding="utf-8")
 plugin_decl = '    id("com.google.gms.google-services") version "4.4.2" apply false'
-# Pin the Firebase plugin to a known published version; normalize any generated declaration.\nst = re.sub(r'id\\("com\\.google\\.gms\\.google-services"\\)\\s+version\\s+"[^"]+"\\s+apply false', plugin_decl, st)\nif "com.google.gms.google-services" not in st:
+# Normalize the generated Firebase plugin declaration to a stable published version.
+st = re.sub(r'id\("com\.google\.gms\.google-services"\)\s+version\s+"[^"]+"\s+apply false', plugin_decl, st)
+if "com.google.gms.google-services" not in st:
     match = re.search(r"plugins\s*\{", st)
     if not match:
         raise SystemExit("Could not locate plugins block in settings.gradle.kts")
