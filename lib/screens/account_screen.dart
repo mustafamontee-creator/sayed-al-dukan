@@ -23,6 +23,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String? _uid;
 
   static const yellow = Color(0xFFFFC94A);
+  static const red = Color(0xFFD94747);
 
   void _reload() => setState(() => _f = context.read<Repo>().addresses());
 
