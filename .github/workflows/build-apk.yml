@@ -33,16 +33,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-          ffmpeg -y -i assets/animation/logo_intro.mp4 \
-            -vf "scale=2160:2160:flags=lanczos,minterpolate=fps=120:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,format=yuv420p" \
-            -c:v libx264 -preset medium -crf 18 -profile:v high -level:v 5.2 \
-            -pix_fmt yuv420p -movflags +faststart -an \
-            assets/animation/logo_intro_4k120.mp4
-          ffmpeg -y -i assets/animation/logo_intro.mp4 \
-            -vf "scale=2160:2160:flags=lanczos,fps=30,format=yuv420p" \
-            -c:v libx264 -preset medium -crf 19 -profile:v high -level:v 5.1 \
+          test -s assets/animation/dukan_9x16_4k.mp4
+          ffmpeg -y -i assets/animation/dukan_9x16_4k.mp4 \
+            -vf "scale=2160:3840:force_original_aspect_ratio=decrease:flags=lanczos,pad=2160:3840:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p" \
+            -c:v libx264 -preset medium -crf 20 -profile:v high -level:v 5.1 \
             -pix_fmt yuv420p -movflags +faststart -an \
             assets/animation/logo_intro_4k30.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate \
+            -of csv=p=0 assets/animation/logo_intro_4k30.mp4
 
       - name: Generate Android project
         run: bash setup.sh
