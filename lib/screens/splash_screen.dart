@@ -169,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (videoReady)
+                if (controller != null && controller.value.isInitialized)
                   Positioned.fill(
                     child: FittedBox(
                       fit: BoxFit.contain,
