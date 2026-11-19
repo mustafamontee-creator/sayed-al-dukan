@@ -12,7 +12,30 @@ mkdir -p android/app
 cp "$tmp/firebase/google-services.json" android/app/google-services.json
 python3 tools/patch_android.py
 
-# Configure dependency mirror without altering plugin-management block structure.
+# Configure mirrors for both plugin resolution and ordinary dependencies.
+python3 - <<'PY'
+from pathlib import Path
+p = Path('android/settings.gradle.kts')
+s = p.read_text()
+mirror = 'maven { url = uri("https://maven.aliyun.com/repository/central") }'
+nl = chr(10)
+if 'pluginManagement {' in s:
+    start = s.find('pluginManagement {')
+    end = s.find('}', start)
+    block = s[start:end]
+    if mirror not in block and 'repositories {' in block:
+        block = block.replace('repositories {', 'repositories {' + nl + '        ' + mirror, 1)
+        s = s[:start] + block + s[end:]
+if 'dependencyResolutionManagement {' in s:
+    start = s.find('dependencyResolutionManagement {')
+    tail = s[start:]
+    if mirror not in tail:
+        tail = tail.replace('repositories {', 'repositories {' + nl + '        ' + mirror, 1)
+        s = s[:start] + tail
+else:
+    s += nl + 'dependencyResolutionManagement {' + nl + '    repositories {' + nl + '        google()' + nl + '        ' + mirror + nl + '        mavenCentral()' + nl + '    }' + nl + '}' + nl
+p.write_text(s)
+PY
 python3 - <<'PY'
 from pathlib import Path
 p = Path('android/settings.gradle.kts')
