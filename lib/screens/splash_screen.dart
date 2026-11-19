@@ -175,8 +175,8 @@ class _SplashScreenState extends State<SplashScreen> {
                       fit: BoxFit.contain,
                       child: SizedBox(
                         width: controller!.value.size.width,
-                        height: controller.value.size.height,
-                        child: VideoPlayer(controller),
+                        height: controller!.value.size.height,
+                        child: VideoPlayer(controller!),
                       ),
                     ),
                   ),
