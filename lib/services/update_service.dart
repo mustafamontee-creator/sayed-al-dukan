@@ -163,17 +163,45 @@ class UpdateService {
                     return;
                   }
                   setDialogState(() { downloading = true; error = null; });
+                  File downloadedFile;
                   try {
-                    final file = await _download(availableUpdate.apkUrl, (value) {
+                    downloadedFile = await _download(availableUpdate.apkUrl, (value) {
                       if (dialogContext.mounted) setDialogState(() => progress = value);
                     });
-                    if (!dialogContext.mounted) return;
-                    await OpenFilex.open(file.path);
-                  } catch (_) {
+                  } catch (e) {
                     if (dialogContext.mounted) {
                       setDialogState(() {
                         downloading = false;
-                        error = isEnglish ? 'Download failed. Please try again.' : 'فشل تحميل التحديث. حاول مرة أخرى.';
+                        error = isEnglish
+                            ? 'Download failed: ${_safeError(e)}'
+                            : 'فشل تنزيل ملف التحديث: ${_safeError(e)}';
+                      });
+                    }
+                    return;
+                  }
+
+                  if (!dialogContext.mounted) return;
+                  try {
+                    final result = await OpenFilex.open(
+                      downloadedFile.path,
+                      type: 'application/vnd.android.package-archive',
+                    );
+                    if (!dialogContext.mounted) return;
+                    setDialogState(() {
+                      downloading = false;
+                      if (result.type != ResultType.done) {
+                        error = isEnglish
+                            ? 'The update was downloaded, but Android could not open the installer: ${result.message}'
+                            : 'تم تنزيل التحديث، لكن تعذر فتح شاشة التثبيت: ${result.message}';
+                      }
+                    });
+                  } catch (e) {
+                    if (dialogContext.mounted) {
+                      setDialogState(() {
+                        downloading = false;
+                        error = isEnglish
+                            ? 'The update downloaded, but the installer could not be opened: ${_safeError(e)}'
+                            : 'تم تنزيل التحديث، لكن تعذر فتح شاشة التثبيت: ${_safeError(e)}';
                       });
                     }
                   }
@@ -187,6 +215,11 @@ class UpdateService {
         );
       },
     );
+  }
+
+  static String _safeError(Object error) {
+    final message = error.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
+    return message.length > 180 ? '${message.substring(0, 180)}…' : message;
   }
 
   static Future<File> _download(String url, void Function(double progress) onProgress) async {
@@ -207,7 +240,14 @@ class UpdateService {
       }
       await sink.flush();
       await sink.close();
-      if (received == 0) throw const HttpException('Empty APK file');
+      if (received < 1024 * 1024) {
+        await file.delete();
+        throw const HttpException('Downloaded APK is incomplete or too small');
+      }
+      if (total > 0 && received != total) {
+        await file.delete();
+        throw HttpException('Incomplete APK: received $received of $total bytes');
+      }
       return file;
     } finally {
       client.close(force: true);
