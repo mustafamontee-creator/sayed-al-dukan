@@ -127,6 +127,7 @@ k = main.read_text(encoding="utf-8")
 imports = [
     "import android.content.Intent",
     "import android.net.Uri",
+    "import android.provider.Settings",
     "import androidx.core.content.FileProvider",
     "import io.flutter.embedding.engine.FlutterEngine",
     "import io.flutter.plugin.common.MethodChannel",
@@ -149,6 +150,16 @@ if "sayed_al_dukan/apk_installer" not in k:
                 return@setMethodCallHandler
             }
             try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O &&
+                    !packageManager.canRequestPackageInstalls()) {
+                    val settingsIntent = Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + packageName)
+                    ).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }
+                    startActivity(settingsIntent)
+                    result.error("PERMISSION_REQUIRED", "Allow installing unknown apps, then return and tap Update now again.", null)
+                    return@setMethodCallHandler
+                }
                 val path = call.argument<String>("path")
                     ?: throw IllegalArgumentException("Missing APK path")
                 val apk = File(path)
