@@ -68,13 +68,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (v) => s.setLang(v!),
           title: Text(context.t('english')),
         ),
-        const Line(),
+        const Divider(),
         const SizedBox(height: 12),
         Text(context.t('region'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         region(context.t('egypt'), true),
         region(context.t('saudi'), false),
         region(context.t('sudan'), false),
-        const Line(),
+        const Divider(),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: Icon(s.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded),
@@ -87,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onChanged: s.setDarkMode,
           ),
         ),
-        const Line(),
+        const Divider(),
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.refresh_rounded, color: Color(0xFF238653)),
@@ -95,7 +95,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
           onTap: () => UpdateService.checkAndShow(context, showNoUpdate: true),
         ),
-        const Line(),
+        const Divider(),
         const SizedBox(height: 8),
         ListTile(
           contentPadding: EdgeInsets.zero,
@@ -106,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             MaterialPageRoute(builder: (_) => const SupportScreen()),
           ),
         ),
-        const Line(),
+        const Divider(),
         const SizedBox(height: 12),
         if (auth.loggedIn)
           OutlinedButton(
