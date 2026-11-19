@@ -1,9 +1,9 @@
 {
-  "version_name": "1.0.22",
-  "version_code": 23,
-  "title_ar": "مقدمة متحركة جديدة وتحسينات",
-  "title_en": "New animated intro and improvements",
-  "description_ar": "إضافة فيديو المقدمة الجديد بدقة 4K، وتحسين شاشة البداية وبعض تفاصيل الواجهة والاستقرار.",
-  "description_en": "New 4K intro video, splash-screen improvements, and interface and stability refinements.",
-  "apk_url": "https://github.com/mustafamontee-creator/sayed-al-dukan/releases/download/v1.0.22/app-release.apk"
+  "version_name": "1.0.23",
+  "version_code": 24,
+  "title_ar": "إصلاح تحديث التطبيق وتحسينات",
+  "title_en": "Update installer fix and improvements",
+  "description_ar": "إصلاح تنزيل ملف التحديث وفتح شاشة التثبيت، مع توضيح الأخطاء عند حدوثها.",
+  "description_en": "Fix APK download and installer launching, with clearer error reporting.",
+  "apk_url": "https://github.com/mustafamontee-creator/sayed-al-dukan/releases/download/v1.0.23/app-release.apk"
 }
