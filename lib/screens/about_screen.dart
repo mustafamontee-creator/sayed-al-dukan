@@ -40,8 +40,8 @@ class _AboutScreenState extends State<AboutScreen> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('شكراً لتقييمك سيد الدكان')));
   }
 
-  Future<void> _openInstagram() async {
-    final uri = Uri.parse('https://www.instagram.com/msvux/');
+  Future<void> _openInstagram(String handle) async {
+    final uri = Uri.parse('https://www.instagram.com/$handle/');
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
@@ -85,7 +85,10 @@ class _AboutScreenState extends State<AboutScreen> {
         Text(en ? 'Developer' : 'المطوّر', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(en ? 'Sayed Al-Dukan app developer' : 'تطوير تطبيق سيد الدكان'),
-        TextButton.icon(onPressed: _openInstagram, icon: const Icon(Icons.camera_alt_outlined), label: const Text('@msvux')),
+        Wrap(spacing: 8, runSpacing: 4, children: [
+          TextButton.icon(onPressed: () => _openInstagram('msvux'), icon: const Icon(Icons.camera_alt_outlined), label: const Text('@msvux')),
+          TextButton.icon(onPressed: () => _openInstagram('mf_abody'), icon: const Icon(Icons.camera_alt_outlined), label: const Text('@mf_abody')),
+        ]),
         Divider(color: Theme.of(context).dividerColor),
         Text(en ? 'Rate the app' : 'قيّم التطبيق', style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
