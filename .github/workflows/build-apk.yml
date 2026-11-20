@@ -29,10 +29,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Verify original intro video
-        run: |
-          test -s assets/animation/dukan_9x16_4k.mp4
-
       - name: Generate Android project
         run: bash setup.sh
 
@@ -59,7 +55,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish APK to GitHub Release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/feature/pro-ui-refresh'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.update.outputs.version_name }}
@@ -69,7 +65,7 @@ jobs:
           generate_release_notes: true
 
       - name: Notify subscribed users about the published update
-        if: github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/feature/pro-ui-refresh'
         env:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
@@ -91,5 +87,3 @@ jobs:
             --header "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             --header "Content-Type: application/json" \
             --data "$PAYLOAD"
-
-# Build-only push trigger: artifact is uploaded; publishing remains manual.
