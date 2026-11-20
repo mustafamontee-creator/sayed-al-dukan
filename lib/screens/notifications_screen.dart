@@ -21,19 +21,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     _future = context.read<Repo>().notifications();
   }
 
-  Future<Map<String, dynamic>?> _loadUpdate() async {
-    final update = await UpdateNotificationStore.read();
-    if (update == null) return null;
-    final current = await PackageInfo.fromPlatform();
-    final installedCode = int.tryParse(current.buildNumber) ?? 0;
-    final updateCode = (update['version_code'] as num?)?.toInt() ?? 0;
-    if (updateCode <= installedCode) {
-      await UpdateNotificationStore.markRead();
-      return null;
-    }
-    return update;
-  }
-
   Future<void> _refresh() async {
     setState(() {
       _future = context.read<Repo>().notifications();
@@ -81,7 +68,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if(rows.isEmpty)return RefreshIndicator(onRefresh:_refresh,child:ListView(physics:const AlwaysScrollableScrollPhysics(),children:[const SizedBox(height:64),BrandedEmptyView(message:context.t('notFound')),const SizedBox(height:64)]));
         return RefreshIndicator(onRefresh:_refresh,child:ListView.separated(physics:const AlwaysScrollableScrollPhysics(),padding:const EdgeInsets.all(16),itemCount:rows.length,separatorBuilder:(_,__)=>Divider(color:Theme.of(context).dividerColor),itemBuilder:(context,index){
           final row=rows[index];final order=row['orders'] is Map?Map<String,dynamic>.from(row['orders'] as Map):<String,dynamic>{};final status=(row['status']??'').toString();final number=(order['order_number']??'').toString();final note=(row['note']??'').toString().trim();
-          return ListTile(contentPadding:const EdgeInsets.symmetric(vertical:6),leading:CircleAvatar(backgroundColor:Theme.of(context).colorScheme.primary,child:Icon(Icons.notifications_active_outlined,color:Theme.of(context).colorScheme.onPrimary)),title:Text(_statusTitle(context,status),style:TextStyle(fontWeight:FontWeight.bold,color:Theme.of(context).colorScheme.onSurface)),subtitle:Padding(padding:const EdgeInsets.only(top:5),child:Text([if(number.isNotEmpty) ${en?'Order':'الطلب'} #$number,if(note.isNotEmpty)note,_dateLabel(row['created_at'])].where((s)=>s.isNotEmpty).join('\n'))));
+          return ListTile(contentPadding:const EdgeInsets.symmetric(vertical:6),leading:CircleAvatar(backgroundColor:Theme.of(context).colorScheme.primary,child:Icon(Icons.notifications_active_outlined,color:Theme.of(context).colorScheme.onPrimary)),title:Text(_statusTitle(context,status),style:TextStyle(fontWeight:FontWeight.bold,color:Theme.of(context).colorScheme.onSurface)),subtitle:Padding(padding:const EdgeInsets.only(top:5),child:Text([if(number.isNotEmpty) (en ? 'Order' : 'الطلب') + ' #' + number,if(note.isNotEmpty)note,_dateLabel(row['created_at'])].where((s)=>s.isNotEmpty).join('\n'))));
         }));
       }),
     );
