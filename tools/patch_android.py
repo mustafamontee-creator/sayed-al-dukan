@@ -124,12 +124,12 @@ kt = activity.read_text(encoding="utf-8")
 if "sayedaldukan/apk_installer" not in kt:
     kt = kt.replace(
         "import io.flutter.embedding.android.FlutterActivity",
-        "import io.flutter.embedding.android.FlutterActivity\\n"
-        "import io.flutter.embedding.engine.FlutterEngine\\n"
-        "import io.flutter.plugin.common.MethodChannel\\n"
-        "import android.content.Intent\\n"
-        "import android.net.Uri\\n"
-        "import androidx.core.content.FileProvider\\n"
+        "import io.flutter.embedding.android.FlutterActivity\n"
+        "import io.flutter.embedding.engine.FlutterEngine\n"
+        "import io.flutter.plugin.common.MethodChannel\n"
+        "import android.content.Intent\n"
+        "import android.net.Uri\n"
+        "import androidx.core.content.FileProvider\n"
         "import java.io.File"
     )
     kt = kt.replace(
@@ -181,6 +181,6 @@ if "com.sayedaldukan.fileprovider" not in ms:
 paths = Path("android/app/src/main/res/xml")
 paths.mkdir(parents=True, exist_ok=True)
 (paths / "apk_provider_paths.xml").write_text(
-    '<?xml version="1.0" encoding="utf-8"?>\\n'
+    '<?xml version="1.0" encoding="utf-8"?>\n'
     '<paths xmlns:android="http://schemas.android.com/apk/res/android">'
-    '<cache-path name="cache_apks" path="."/></paths>\\n', encoding="utf-8")
+    '<cache-path name="cache_apks" path="."/></paths>\n', encoding="utf-8")
