@@ -45,3 +45,11 @@ jobs:
           ANDROID_KEY_ALIAS: sayed-al-dukan-release
         run: bash build_apk.sh
 
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sayed-al-dukan-1.0.32
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
