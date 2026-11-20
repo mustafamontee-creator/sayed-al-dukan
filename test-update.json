@@ -1,0 +1,9 @@
+{
+  "test_mode": true,
+  "version_name": "اختبار",
+  "version_code": 999999,
+  "title_ar": "إشعار اختبار — سيد الدكان",
+  "title_en": "Sayed Al-Dukan — Test Notification",
+  "description_ar": "هذا إشعار تجريبي فقط لا يحتوي على تحديث APK ولا يطلب تثبيت تطبيق. الهدف اختبار وصول الإشعار وعرضه داخل التطبيق.",
+  "description_en": "This is a test notification only. It contains no APK and does not request an app installation. It is intended to test notification delivery and in-app display."
+}
