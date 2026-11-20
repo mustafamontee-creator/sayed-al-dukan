@@ -5,7 +5,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../core/strings.dart';
 import '../services/auth_service.dart';
 import '../services/settings_controller.dart';
-import '../services/update_service.dart';
 import 'support_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -86,14 +85,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: s.isDarkMode,
             onChanged: s.setDarkMode,
           ),
-        ),
-        const Divider(),
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: const Icon(Icons.refresh_rounded, color: Color(0xFF238653)),
-          title: Text(context.t('checkUpdates')),
-          trailing: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          onTap: () => UpdateService.checkAndShow(context, showNoUpdate: true),
         ),
         const Divider(),
         const SizedBox(height: 8),
