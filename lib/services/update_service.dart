@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:open_filex/open_filex.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -117,8 +117,9 @@ class UpdateService {
             setState(() { downloading = true; error = null; progress = 0; });
             try {
               final file = await _download(available, (p) { if (dialogContext.mounted) setState(() => progress = p); });
-              final result = await OpenFilex.open(file.path);
-              if (result.type != ResultType.done) throw Exception(result.message);
+              final installerUri = Uri.file(file.path);
+              final opened = await launchUrl(installerUri, mode: LaunchMode.externalApplication);
+              if (!opened) throw Exception('Android installer could not be opened');
               if (dialogContext.mounted) setState(() { downloading = false; });
             } catch (e) {
               if (dialogContext.mounted) setState(() { downloading = false; error = (en ? 'Update installation could not be started. ${e.toString()}' : 'تعذر بدء تثبيت التحديث. ${e.toString()}'); });
