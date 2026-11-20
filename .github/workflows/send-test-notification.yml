@@ -1,0 +1,40 @@
+name: Send Test Update Notification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+
+      - name: Send test notification
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY is missing in repository Actions secrets."
+            exit 1
+          fi
+          test -f test-update.json
+          jq -e '.test_mode == true' test-update.json >/dev/null
+          PAYLOAD="$(jq -c '{
+            version_name: .version_name,
+            version_code: .version_code,
+            title_ar: .title_ar,
+            title_en: .title_en,
+            description_ar: .description_ar,
+            description_en: .description_en
+          }' test-update.json)"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "https://vusjswnvqbxspdgbekxc.supabase.co/functions/v1/send-app-update" \
+            --header "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            --header "Content-Type: application/json" \
+            --data "$PAYLOAD"
