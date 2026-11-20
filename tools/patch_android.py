@@ -112,3 +112,75 @@ if "coreLibraryDesugaring(" not in g:
 gradle.write_text(g, encoding="utf-8")
 print("Patched Android manifest, Firebase plugins, and release signing configuration")
 
+
+
+# Native APK installer using Android's Package Installer (FileProvider + ACTION_VIEW).
+from pathlib import Path
+kotlin_files = list(Path("android/app/src/main/kotlin").rglob("MainActivity.kt"))
+if not kotlin_files:
+    raise SystemExit("Could not locate generated MainActivity.kt")
+activity = kotlin_files[0]
+kt = activity.read_text(encoding="utf-8")
+if "sayedaldukan/apk_installer" not in kt:
+    kt = kt.replace(
+        "import io.flutter.embedding.android.FlutterActivity",
+        "import io.flutter.embedding.android.FlutterActivity\\n"
+        "import io.flutter.embedding.engine.FlutterEngine\\n"
+        "import io.flutter.plugin.common.MethodChannel\\n"
+        "import android.content.Intent\\n"
+        "import android.net.Uri\\n"
+        "import androidx.core.content.FileProvider\\n"
+        "import java.io.File"
+    )
+    kt = kt.replace(
+        "class MainActivity : FlutterActivity()",
+        """class MainActivity : FlutterActivity() {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sayedaldukan/apk_installer")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "installApk") {
+                    val path = call.argument<String>("path")
+                    try {
+                        if (path == null) throw IllegalArgumentException("Missing APK path")
+                        val apk = File(path)
+                        if (!apk.exists()) throw IllegalArgumentException("APK file not found")
+                        val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".fileprovider", apk)
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "application/vnd.android.package-archive")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("INSTALLER_ERROR", e.message, null)
+                    }
+                } else result.notImplemented()
+            }
+    }
+}"""
+    )
+    activity.write_text(kt, encoding="utf-8")
+
+# Add provider entry to manifest and provider paths.
+manifest = Path("android/app/src/main/AndroidManifest.xml")
+ms = manifest.read_text(encoding="utf-8")
+if "com.sayedaldukan.fileprovider" not in ms:
+    provider = '''
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/apk_provider_paths" />
+        </provider>
+'''
+    ms = ms.replace("</application>", provider + "    </application>", 1)
+    manifest.write_text(ms, encoding="utf-8")
+paths = Path("android/app/src/main/res/xml")
+paths.mkdir(parents=True, exist_ok=True)
+(paths / "apk_provider_paths.xml").write_text(
+    '<?xml version="1.0" encoding="utf-8"?>\\n'
+    '<paths xmlns:android="http://schemas.android.com/apk/res/android">'
+    '<cache-path name="cache_apks" path="."/></paths>\\n', encoding="utf-8")
