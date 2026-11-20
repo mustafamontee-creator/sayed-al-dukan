@@ -117,9 +117,9 @@ class UpdateService {
             setState(() { downloading = true; error = null; progress = 0; });
             try {
               final file = await _download(available, (p) { if (dialogContext.mounted) setState(() => progress = p); });
-              final installerUri = Uri.file(file.path);
-              final opened = await launchUrl(installerUri, mode: LaunchMode.externalApplication);
-              if (!opened) throw Exception('Android installer could not be opened');
+              const installer = MethodChannel('sayedaldukan/apk_installer');
+              final opened = await installer.invokeMethod<bool>('installApk', {'path': file.path});
+              if (opened != true) throw Exception('Android installer could not be opened');
               if (dialogContext.mounted) setState(() { downloading = false; });
             } catch (e) {
               if (dialogContext.mounted) setState(() { downloading = false; error = (en ? 'Update installation could not be started. ${e.toString()}' : 'تعذر بدء تثبيت التحديث. ${e.toString()}'); });
