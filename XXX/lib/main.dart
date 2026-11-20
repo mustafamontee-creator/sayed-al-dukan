@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
+import 'package:local_auth/local_auth.dart';
 
 void main() => runApp(const XXXApp());
 
@@ -21,13 +23,14 @@ class PinLogin extends StatefulWidget { const PinLogin({super.key}); @override S
 class _PinLoginState extends State<PinLogin> {
  final pinController=TextEditingController(); String? error;
  void enter(){if(pinController.text==_pin){Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>const ManagerHome()));}else{setState(()=>error='الرمز غير صحيح');pinController.clear();}}
+ Future<void> biometricLogin() async { final auth=LocalAuthentication(); try { final available=await auth.getAvailableBiometrics(); final wanted=Platform.isAndroid?BiometricType.fingerprint:BiometricType.face; if(!available.contains(wanted)){if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(Platform.isAndroid?'هذا الجهاز لا يوفر بصمة إصبع متاحة للتطبيق':'Face ID غير متاح على هذا الجهاز')));return;} final ok=await auth.authenticate(localizedReason:Platform.isAndroid?'استخدم بصمة الإصبع للدخول':'استخدم Face ID للدخول',options:const AuthenticationOptions(biometricOnly:true,stickyAuth:true)); if(ok&&mounted)Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>const ManagerHome())); }catch(e){if(mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('تعذر استخدام المصادقة البيومترية')));}}
  @override void dispose(){pinController.dispose();super.dispose();}
  @override Widget build(BuildContext context)=>Scaffold(body:SafeArea(child:Center(child:SingleChildScrollView(padding:const EdgeInsets.all(28),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:420),child:Column(mainAxisAlignment:MainAxisAlignment.center,children:[
  const Icon(Icons.blur_circular,size:84,color:_blue),const SizedBox(height:14),const Text('XXX',style:TextStyle(fontSize:34,fontWeight:FontWeight.bold,letterSpacing:4,color:_blue)),const Text('إدارة سيد الدكان',style:TextStyle(color:_blue)),const SizedBox(height:48),
  TextField(controller:pinController,obscureText:true,keyboardType:TextInputType.number,textAlign:TextAlign.center,maxLength:6,decoration:InputDecoration(counterText:'',hintText:'••••••',hintStyle:const TextStyle(letterSpacing:10,color:_blue),prefixIcon:const Icon(Icons.lock_outline,color:_blue),border:OutlineInputBorder(borderRadius:BorderRadius.circular(14))),onSubmitted:(_)=>enter()),
  if(error!=null)Padding(padding:const EdgeInsets.only(top:8),child:Text(error!,style:const TextStyle(color:_blue))),
  const SizedBox(height:18),SizedBox(width:double.infinity,height:52,child:ElevatedButton(onPressed:enter,style:ElevatedButton.styleFrom(backgroundColor:_blue,foregroundColor:Colors.white),child:const Text('دخول'))),
- const SizedBox(height:18),OutlinedButton.icon(onPressed:()=>ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('البصمة وFace ID سيتم ربطهما لاحقاً'))),icon:const Icon(Icons.fingerprint,size:30,color:_blue),label:const Text('الدخول بالبصمة'),style:OutlinedButton.styleFrom(foregroundColor:_blue,side:const BorderSide(color:_blue),minimumSize:const Size(double.infinity,50)))
+ const SizedBox(height:18),OutlinedButton.icon(onPressed:biometricLogin,icon:const Icon(Icons.fingerprint,size:30,color:_blue),label:const Text('الدخول بالبصمة'),style:OutlinedButton.styleFrom(foregroundColor:_blue,side:const BorderSide(color:_blue),minimumSize:const Size(double.infinity,50)))
  ]))))));}
 }
 
