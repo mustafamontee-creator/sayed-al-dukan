@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../core/strings.dart';
-import '../services/update_service.dart';
 import 'about_screen.dart';
 import 'account_screen.dart';
 import 'dukan_screen.dart';
@@ -18,15 +17,6 @@ class Shell extends StatefulWidget {
 class _ShellState extends State<Shell> {
   int _i = 2;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future<void>.delayed(const Duration(milliseconds: 900), () {
-        if (mounted) UpdateService.checkAndShow(context);
-      });
-    });
-  }
   static const _pages = <Widget>[
     AboutScreen(), SearchScreen(), DukanScreen(), AccountScreen(), SettingsScreen(),
   ];
