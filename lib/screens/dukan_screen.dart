@@ -7,7 +7,6 @@ import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/cart_service.dart';
 import '../services/repo.dart';
-import '../services/update_notification_store.dart';
 import '../ui/widgets.dart';
 import 'cart_screen.dart';
 import 'notifications_screen.dart';
@@ -19,30 +18,19 @@ class DukanScreen extends StatefulWidget {
   State<DukanScreen> createState() => _DukanScreenState();
 }
 
-class _DukanScreenState extends State<DukanScreen> with WidgetsBindingObserver {
+class _DukanScreenState extends State<DukanScreen> {
   late Future<List<Product>> _f;
   static const _heights = <double>[200, 250, 220, 180, 240]; // varied tile sizes
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _f = context.read<Repo>().products();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  // Changes made later from the admin app appear when the app comes back.
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _reload();
-      UpdateNotificationStore.refreshUnread();
-    }
   }
 
   void _reload() {
@@ -157,51 +145,7 @@ class _CartButton extends StatelessWidget {
   }
 }
 
-class _NotificationButton extends StatelessWidget {
-  const _NotificationButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: UpdateNotificationStore.unread,
-      builder: (context, hasUnread, _) => InkWell(
-        customBorder: const CircleBorder(),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-        ),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: const BoxDecoration(color: AppColors.white, shape: BoxShape.circle),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const Center(child: Icon(Icons.notifications_none, color: AppColors.black, size: 23)),
-              if (hasUnread)
-                Positioned(
-                  top: -3,
-                  right: -3,
-                  child: Container(
-                    width: 17,
-                    height: 17,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD54F),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.white, width: 1.5),
-                    ),
-                    child: const Text('1', style: TextStyle(
-                      color: Color(0xFF3B3210), fontSize: 10, fontWeight: FontWeight.bold,
-                    )),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+class _NotificationButton extends StatelessWidget { const _NotificationButton(); @override Widget build(BuildContext context) => InkWell(customBorder: const CircleBorder(), onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NotificationsScreen())), child: Container(width:48,height:48,decoration:const BoxDecoration(color:AppColors.white,shape:BoxShape.circle),child:const Center(child:Icon(Icons.notifications_none,color:AppColors.black,size:23)))); }
 
 class _Tile extends StatelessWidget {
   const _Tile(this.p, this.height);
