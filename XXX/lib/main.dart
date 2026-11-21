@@ -82,5 +82,25 @@ Future<void> orderDetails(Map<String,dynamic> o)async{
 }
 Future<void> delete(Map<String,dynamic> r)async{if(widget.table!='products'&&widget.table!='reviews')return;await db.from(widget.table).delete().eq('id',r['id']);refresh();}
 Widget tile(Map<String,dynamic> r){switch(widget.table){case 'products':return ListTile(leading:r['image_url']==null?const Icon(Icons.image):Image.network(r['image_url'],width:52,height:52,fit:BoxFit.cover,errorBuilder:(_,__,___)=>const Icon(Icons.broken_image)),title:Text(r['name']??''),subtitle:Text('${r['unit_price']} • ${r['is_active']==true?'نشط':'مخفي'}'),onTap:()=>form(r),trailing:IconButton(icon:const Icon(Icons.delete_outline),onPressed:()=>delete(r)));case 'orders':return ListTile(title:Text('طلب ${r['order_number']} • ${r['total']}'),subtitle:Text('${r['status']} • ${r['created_at']}'),onTap:()=>form(r));case 'profiles':return ListTile(title:Text(r['full_name']??'عميل'),subtitle:Text('${r['contact_phone']??''} • ${r['region']??''}\n${r['id']}'));case 'reviews':return ListTile(title:Text('${r['author_name']} • ${r['rating']}★'),subtitle:Text(r['comment']??''),trailing:IconButton(icon:const Icon(Icons.delete),onPressed:()=>delete(r)));default:return ListTile(title:Text(r['title']??r['section']),subtitle:Text(r['section']),onTap:()=>form(r));}}
-Widget build(BuildContext c)=>Scaffold(appBar:AppBar(title:Text(widget.title),actions:[if(widget.table=='products')IconButton(icon:const Icon(Icons.add),onPressed:()=>form())]),body:FutureBuilder<List<Map<String,dynamic>>>(future:fetch(),builder:(c,s){if(s.hasError)return Center(child:Text('خطأ: ${s.error}'));if(!s.hasData)return const Center(child:CircularProgressIndicator());if(s.data!.isEmpty)return const Center(child:Text('لا توجد بيانات'));return RefreshIndicator(onRefresh:refresh,child:ListView.builder(itemCount:s.data!.length,itemBuilder:(c,i)=>Card(child:tile(s.data![i]))));}));}
+Widget build(BuildContext c) => Scaffold(
+  appBar: AppBar(
+    title: Text(widget.title),
+    actions: [if (widget.table == 'products') IconButton(icon: const Icon(Icons.add), onPressed: () => form())],
+  ),
+  body: FutureBuilder<List<Map<String, dynamic>>>(
+    future: fetch(),
+    builder: (c, s) {
+      if (s.hasError) return Center(child: Text('خطأ: ${s.error}'));
+      if (!s.hasData) return const Center(child: CircularProgressIndicator());
+      if (s.data!.isEmpty) return const Center(child: Text('لا توجد بيانات'));
+      return RefreshIndicator(
+        onRefresh: refresh,
+        child: ListView.builder(
+          itemCount: s.data!.length,
+          itemBuilder: (c, i) => Card(child: tile(s.data![i])),
+        ),
+      );
+    },
+  ),
+);
 }
