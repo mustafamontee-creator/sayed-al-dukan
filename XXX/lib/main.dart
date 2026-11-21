@@ -13,7 +13,7 @@ class XXXApp extends StatelessWidget {
   const XXXApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'XXX',
+    title: 'XXX - نسخة تجريبية',
     debugShowCheckedModeBanner: false,
     theme: ThemeData.dark().copyWith(
       scaffoldBackgroundColor: bg,
@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
     padding: const EdgeInsets.all(24), child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 430), child: Column(mainAxisSize: MainAxisSize.min, children: [
         const Icon(Icons.shield_outlined, color: blue, size: 64),
-        const SizedBox(height: 16), const Text('XXX', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: blue)),
+        const SizedBox(height: 16), const Text('XXX • TEST', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: blue)),
         const Text('إدارة سيد الدكان', style: TextStyle(color: Colors.white60)),
         const SizedBox(height: 36),
         TextField(controller: code, obscureText: true, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'رمز اختبار الدخول')),
@@ -88,7 +88,7 @@ class HomePage extends StatelessWidget {
   ];
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('XXX • مركز الإدارة')),
+    appBar: AppBar(title: const Text('XXX • مركز الإدارة • TEST')),
     body: ListView(padding: const EdgeInsets.all(16), children: [
       const Text('مركز الإدارة', style: TextStyle(color: blue, fontSize: 24, fontWeight: FontWeight.bold)),
       const SizedBox(height: 20),
