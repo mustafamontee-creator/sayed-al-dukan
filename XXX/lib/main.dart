@@ -2,22 +2,165 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
-void main()=>runApp(const XXXApp());
-const pinCode='011780';
-const blue=Color(0xFF3030FF);
-const bg=Color(0xFF050505), panel=Color(0xFF111111), border=Color(0xFF252545);
-class XXXApp extends StatelessWidget{const XXXApp({super.key});@override Widget build(BuildContext context)=>MaterialApp(debugShowCheckedModeBanner:false,title:'XXX',theme:ThemeData.dark().copyWith(scaffoldBackgroundColor:bg,colorScheme:const ColorScheme.dark(primary:blue,surface:panel),inputDecorationTheme:InputDecorationTheme(filled:true,fillColor:panel,border:OutlineInputBorder(borderRadius:BorderRadius.all(Radius.circular(16)),borderSide:BorderSide(color:border)),enabledBorder:OutlineInputBorder(borderRadius:BorderRadius.all(Radius.circular(16)),borderSide:BorderSide(color:border)),focusedBorder:OutlineInputBorder(borderRadius:BorderRadius.all(Radius.circular(16)),borderSide:BorderSide(color:blue)),labelStyle:const TextStyle(color:Colors.white70))),home:const LoginPage());}}
-class LoginPage extends StatefulWidget{const LoginPage({super.key});@override State<LoginPage> createState()=>_LoginPageState();}
-class _LoginPageState extends State<LoginPage>{final c=TextEditingController();String? err;Future<void> bio()async{try{final a=LocalAuthentication();final list=await a.getAvailableBiometrics();final wanted=Platform.isAndroid?BiometricType.fingerprint:BiometricType.face;if(!list.contains(wanted)){if(mounted)msg(Platform.isAndroid?'بصمة الإصبع غير متاحة على هذا الجهاز':'Face ID غير متاح على هذا الجهاز');return;}final ok=await a.authenticate(localizedReason:Platform.isAndroid?'استخدم بصمة الإصبع للدخول':'استخدم Face ID للدخول',options:const AuthenticationOptions(biometricOnly:true,stickyAuth:true));if(ok&&mounted)go();}catch(_){if(mounted)msg('تعذر تشغيل المصادقة البيومترية');}}void msg(String s)=>ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(s)));void go(){Navigator.pushReplacement(context,MaterialPageRoute(builder:(_)=>const HomePage()));}void check(){if(c.text==pinCode)go();else setState(()=>err='الرمز غير صحيح');}
-@override Widget build(BuildContext context)=>Scaffold(body:SafeArea(child:Center(child:SingleChildScrollView(padding:const EdgeInsets.all(24),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:430),child:Column(mainAxisSize:MainAxisSize.min,children:[Container(padding:const EdgeInsets.all(22),decoration:const BoxDecoration(color:panel,shape:BoxShape.circle),child:const Icon(Icons.shield_outlined,color:blue,size:52)),const SizedBox(height:18),const Text('XXX',style:TextStyle(fontSize:32,fontWeight:FontWeight.bold,letterSpacing:4,color:blue)),const SizedBox(height:4),const Text('إدارة سيد الدكان',style:TextStyle(color:Colors.white60)),const SizedBox(height:38),TextField(controller:c,obscureText:true,keyboardType:TextInputType.number,textAlign:TextAlign.center,maxLength:6,decoration:const InputDecoration(counterText:'',hintText:'رمز الدخول',prefixIcon:Icon(Icons.lock_outline))),if(err!=null)Padding(padding:const EdgeInsets.only(top:8),child:Text(err!,style:const TextStyle(color:Colors.redAccent))),const SizedBox(height:16),SizedBox(width:double.infinity,height:52,child:ElevatedButton(onPressed:check,style:ElevatedButton.styleFrom(backgroundColor:blue,foregroundColor:Colors.white,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16))),child:const Text('دخول'))),const SizedBox(height:12),SizedBox(width:double.infinity,height:52,child:OutlinedButton.icon(onPressed:bio,icon:const Icon(Icons.fingerprint),label:const Text('بصمة / Face ID'),style:OutlinedButton.styleFrom(foregroundColor:blue,side:const BorderSide(color:blue),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16)))))]))))));}}
-class HomePage extends StatelessWidget{const HomePage({super.key});static const items=[('الألوان والتصميم',Icons.palette_outlined),('المنتجات والأسعار',Icons.inventory_2_outlined),('الصفحات والواجهات',Icons.dashboard_outlined),('الأقسام والبنرات',Icons.view_carousel_outlined),('الطلبات والعملاء',Icons.shopping_bag_outlined),('النصوص والمحتوى',Icons.text_fields),('الحقول والميزات',Icons.extension_outlined),('الإعدادات العامة',Icons.settings_outlined)];@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:const Text('XXX • مركز الإدارة'),backgroundColor:bg),body:ListView(padding:const EdgeInsets.all(16),children:[const Text('مركز الإدارة',style:TextStyle(color:blue,fontSize:24,fontWeight:FontWeight.bold)),const SizedBox(height:5),const Text('سيد الدكان',style:TextStyle(color:Colors.white60)),const SizedBox(height:20),GridView.builder(shrinkWrap:true,physics:const NeverScrollableScrollPhysics(),gridDelegate:const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount:2,crossAxisSpacing:12,mainAxisSpacing:12,childAspectRatio:1.08),itemCount:items.length,itemBuilder:(ctx,i)=>CardTile(title:items[i].$1,icon:items[i].$2,onTap:()=>Navigator.push(ctx,MaterialPageRoute(builder:(_)=>i==1?const ProductsPage():PlaceholderSection(title:items[i].$1,icon:items[i].$2))))),const SizedBox(height:12),Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(border:Border.all(color:border),borderRadius:BorderRadius.circular(18)),child:const Text('جهّز التغييرات، عاينها، ثم اعتمدها.',style:TextStyle(color:Colors.white70)))]));}
-class CardTile extends StatelessWidget{final String title;final IconData icon;final VoidCallback onTap;const CardTile({super.key,required this.title,required this.icon,required this.onTap});@override Widget build(BuildContext context)=>Material(color:panel,borderRadius:BorderRadius.circular(20),child:InkWell(onTap:onTap,borderRadius:BorderRadius.circular(20),child:Container(padding:const EdgeInsets.all(16),decoration:BoxDecoration(border:Border.all(color:border),borderRadius:BorderRadius.circular(20)),child:Column(crossAxisAlignment:CrossAxisAlignment.start,mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[Icon(icon,color:blue,size:30),Text(title,style:const TextStyle(fontWeight:FontWeight.w600))]))));}
-class PlaceholderSection extends StatelessWidget{final String title;final IconData icon;const PlaceholderSection({super.key,required this.title,required this.icon});@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:Text(title)),body:Center(child:Column(mainAxisSize:MainAxisSize.min,children:[Icon(icon,color:blue,size:64),const SizedBox(height:16),Text(title,style:const TextStyle(fontSize:22)),const SizedBox(height:8),const Text('القسم قيد التجهيز',style:TextStyle(color:Colors.white60))])));}
-class Product{final String name,price,bio;const Product(this.name,this.price,this.bio);}
-class ProductsPage extends StatefulWidget{const ProductsPage({super.key});@override State<ProductsPage> createState()=>_ProductsPageState();}
-class _ProductsPageState extends State<ProductsPage>{final list=<Product>[];Future<void> add()async{final p=await Navigator.push<Product>(context,MaterialPageRoute(builder:(_)=>const ProductEditor()));if(p!=null)setState(()=>list.add(p));}@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:const Text('المنتجات والأسعار')),floatingActionButton:FloatingActionButton.extended(backgroundColor:blue,onPressed:add,icon:const Icon(Icons.add),label:const Text('إضافة منتج')),body:list.isEmpty?Center(child:Column(mainAxisSize:MainAxisSize.min,children:[const Icon(Icons.inventory_2_outlined,color:blue,size:68),const SizedBox(height:14),const Text('الدكان فارغ',style:TextStyle(fontSize:20)),const SizedBox(height:6),const Text('أضف المنتجات التي تختارها',style:TextStyle(color:Colors.white60))])):ListView.builder(padding:const EdgeInsets.all(16),itemCount:list.length,itemBuilder:(ctx,i)=>Card(color:panel,child:ListTile(title:Text(list[i].name),subtitle:Text(list[i].price),leading:const Icon(Icons.image,color:blue),onTap:()=>Navigator.push(ctx,MaterialPageRoute(builder:(_)=>ProductPreview(product:list[i])))))));}
+void main() => runApp(const XXXApp());
+
+const blue = Color(0xFF3030FF);
+const bg = Color(0xFF050505);
+const panel = Color(0xFF111111);
+const border = Color(0xFF252545);
+
+class XXXApp extends StatelessWidget {
+  const XXXApp({super.key});
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'XXX',
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData.dark().copyWith(
+      scaffoldBackgroundColor: bg,
+      colorScheme: const ColorScheme.dark(primary: blue, surface: panel),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true, fillColor: panel,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    ),
+    home: const LoginPage(),
+  );
 }
-class ProductEditor extends StatefulWidget{const ProductEditor({super.key});@override State<ProductEditor> createState()=>_ProductEditorState();}
-class _ProductEditorState extends State<ProductEditor>{final n=TextEditingController(),p=TextEditingController(),b=TextEditingController();@override void dispose(){n.dispose();p.dispose();b.dispose();super.dispose();}void preview(){if(n.text.trim().isEmpty||p.text.trim().isEmpty){ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('اكتب الاسم والسعر')));return;}Navigator.push(context,MaterialPageRoute(builder:(_)=>ProductPreview(product:Product(n.text,p.text,b.text),editable:true)));}@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:const Text('إضافة منتج')),body:ListView(padding:const EdgeInsets.all(20),children:[TextField(controller:n,decoration:const InputDecoration(labelText:'اسم المنتج')),const SizedBox(height:14),TextField(controller:p,keyboardType:TextInputType.number,decoration:const InputDecoration(labelText:'السعر')),const SizedBox(height:14),TextField(controller:b,maxLines:4,decoration:const InputDecoration(labelText:'الوصف / Bio')),const SizedBox(height:16),Container(height:150,decoration:BoxDecoration(color:panel,border:Border.all(color:border),borderRadius:BorderRadius.circular(18)),child:const Center(child:Column(mainAxisSize:MainAxisSize.min,children:[Icon(Icons.image_outlined,color:blue,size:44),SizedBox(height:8),Text('مساحة اختيار الصورة',style:TextStyle(color:Colors.white60))]))),const SizedBox(height:20),SizedBox(height:52,child:ElevatedButton(onPressed:preview,style:ElevatedButton.styleFrom(backgroundColor:blue,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16))),child:const Text('معاينة')))]));}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+  @override State<LoginPage> createState() => _LoginPageState();
 }
-class ProductPreview extends StatelessWidget{final Product product;final bool editable;const ProductPreview({super.key,required this.product,this.editable=false});@override Widget build(BuildContext context)=>Scaffold(appBar:AppBar(title:const Text('معاينة المنتج')),body:ListView(padding:const EdgeInsets.all(20),children:[Container(height:220,decoration:BoxDecoration(color:panel,border:Border.all(color:border),borderRadius:BorderRadius.circular(20)),child:const Center(child:Icon(Icons.image_outlined,color:blue,size:72))),const SizedBox(height:18),Text(product.name,style:const TextStyle(fontSize:24,fontWeight:FontWeight.bold)),const SizedBox(height:8),Text(product.price,style:const TextStyle(color:blue,fontSize:20)),const SizedBox(height:12),Text(product.bio,style:const TextStyle(color:Colors.white70)),const SizedBox(height:24),ElevatedButton(onPressed:()=>Navigator.pop(context,product),style:ElevatedButton.styleFrom(backgroundColor:blue,shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(16))),child:Text(editable?'اعتماد تجريبي':'اعتماد')),OutlinedButton(onPressed:()=>Navigator.pop(context),child:const Text('رجوع للتعديل'))]));}
+class _LoginPageState extends State<LoginPage> {
+  final code = TextEditingController();
+  String? error;
+  void enter() {
+    if (code.text.trim().isEmpty) {
+      setState(() => error = 'أدخل رمز الاختبار');
+      return;
+    }
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+  }
+  Future<void> biometric() async {
+    try {
+      final auth = LocalAuthentication();
+      if (!await auth.isDeviceSupported()) {
+        show('المصادقة البيومترية غير مدعومة');
+        return;
+      }
+      final ok = await auth.authenticate(
+        localizedReason: Platform.isAndroid ? 'تحقق من هويتك' : 'تحقق باستخدام Face ID',
+        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+      );
+      if (ok && mounted) Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+    } catch (_) { show('تعذر تشغيل المصادقة'); }
+  }
+  void show(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  @override
+  void dispose() { code.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) => Scaffold(body: SafeArea(child: Center(child: SingleChildScrollView(
+    padding: const EdgeInsets.all(24), child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 430), child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.shield_outlined, color: blue, size: 64),
+        const SizedBox(height: 16), const Text('XXX', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: blue)),
+        const Text('إدارة سيد الدكان', style: TextStyle(color: Colors.white60)),
+        const SizedBox(height: 36),
+        TextField(controller: code, obscureText: true, textAlign: TextAlign.center, decoration: const InputDecoration(labelText: 'رمز اختبار الدخول')),
+        if (error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(error!, style: const TextStyle(color: Colors.redAccent))),
+        const SizedBox(height: 16),
+        SizedBox(width: double.infinity, height: 52, child: ElevatedButton(onPressed: enter, style: ElevatedButton.styleFrom(backgroundColor: blue), child: const Text('دخول'))),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, height: 52, child: OutlinedButton.icon(onPressed: biometric, icon: const Icon(Icons.fingerprint), label: const Text('بصمة / Face ID'))),
+        const SizedBox(height: 12), const Text('نسخة تجريبية فقط — لا تستخدم بيانات حقيقية', textAlign: TextAlign.center, style: TextStyle(color: Colors.white54)),
+      ]),
+    ),
+  ))));
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+  static const items = <(String, IconData)>[
+    ('الألوان والتصميم', Icons.palette_outlined), ('المنتجات والأسعار', Icons.inventory_2_outlined),
+    ('الصفحات والواجهات', Icons.dashboard_outlined), ('الأقسام والبنرات', Icons.view_carousel_outlined),
+    ('الطلبات والعملاء', Icons.shopping_bag_outlined), ('النصوص والمحتوى', Icons.text_fields),
+    ('الحقول والميزات', Icons.extension_outlined), ('الإعدادات العامة', Icons.settings_outlined),
+  ];
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('XXX • مركز الإدارة')),
+    body: ListView(padding: const EdgeInsets.all(16), children: [
+      const Text('مركز الإدارة', style: TextStyle(color: blue, fontSize: 24, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 20),
+      GridView.builder(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.08),
+        itemCount: items.length, itemBuilder: (context, i) => CardTile(title: items[i].$1, icon: items[i].$2,
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => i == 1 ? const ProductsPage() : PlaceholderSection(title: items[i].$1, icon: items[i].$2))))),
+    ]),
+  );
+}
+class CardTile extends StatelessWidget {
+  final String title; final IconData icon; final VoidCallback onTap;
+  const CardTile({super.key, required this.title, required this.icon, required this.onTap});
+  @override Widget build(BuildContext context) => Material(color: panel, borderRadius: BorderRadius.circular(20),
+    child: InkWell(onTap: onTap, borderRadius: BorderRadius.circular(20), child: Container(padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(border: Border.all(color: border), borderRadius: BorderRadius.circular(20),
+      ), child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Icon(icon, color: blue, size: 30), Text(title, style: const TextStyle(fontWeight: FontWeight.w600))]))));
+}
+class PlaceholderSection extends StatelessWidget {
+  final String title; final IconData icon;
+  const PlaceholderSection({super.key, required this.title, required this.icon});
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: Text(title)),
+    body: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Icon(icon, color: blue, size: 64), const SizedBox(height: 16), Text(title, style: const TextStyle(fontSize: 22)), const SizedBox(height: 8), const Text('القسم قيد التجهيز', style: TextStyle(color: Colors.white60))])));
+}
+class Product {
+  final String name, price, description;
+  const Product(this.name, this.price, this.description);
+}
+class ProductsPage extends StatefulWidget {
+  const ProductsPage({super.key});
+  @override State<ProductsPage> createState() => _ProductsPageState();
+}
+class _ProductsPageState extends State<ProductsPage> {
+  final products = <Product>[];
+  Future<void> add() async {
+    final product = await Navigator.push<Product>(context, MaterialPageRoute(builder: (_) => const ProductEditor()));
+    if (product != null && mounted) setState(() => products.add(product));
+  }
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('المنتجات والأسعار')),
+    floatingActionButton: FloatingActionButton.extended(onPressed: add, backgroundColor: blue, icon: const Icon(Icons.add), label: const Text('إضافة منتج')),
+    body: products.isEmpty ? const Center(child: Text('أضف المنتجات التي تختارها')) : ListView.builder(itemCount: products.length,
+      itemBuilder: (context, i) => Card(color: panel, child: ListTile(title: Text(products[i].name), subtitle: Text(products[i].price), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductPreview(product: products[i])))))));
+}
+class ProductEditor extends StatefulWidget {
+  const ProductEditor({super.key});
+  @override State<ProductEditor> createState() => _ProductEditorState();
+}
+class _ProductEditorState extends State<ProductEditor> {
+  final name = TextEditingController(); final price = TextEditingController(); final description = TextEditingController();
+  @override void dispose() { name.dispose(); price.dispose(); description.dispose(); super.dispose(); }
+  void preview() {
+    if (name.text.trim().isEmpty || price.text.trim().isEmpty) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اكتب الاسم والسعر'))); return; }
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProductPreview(product: Product(name.text, price.text, description.text), editable: true)));
+  }
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('إضافة منتج')),
+    body: ListView(padding: const EdgeInsets.all(20), children: [
+      TextField(controller: name, decoration: const InputDecoration(labelText: 'اسم المنتج')), const SizedBox(height: 14),
+      TextField(controller: price, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'السعر')), const SizedBox(height: 14),
+      TextField(controller: description, maxLines: 4, decoration: const InputDecoration(labelText: 'الوصف')), const SizedBox(height: 20),
+      SizedBox(height: 52, child: ElevatedButton(onPressed: preview, style: ElevatedButton.styleFrom(backgroundColor: blue), child: const Text('معاينة'))),
+    ]));
+}
+class ProductPreview extends StatelessWidget {
+  final Product product; final bool editable;
+  const ProductPreview({super.key, required this.product, this.editable = false});
+  @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('معاينة المنتج')),
+    body: ListView(padding: const EdgeInsets.all(20), children: [
+      Container(height: 220, decoration: BoxDecoration(color: panel, border: Border.all(color: border), borderRadius: BorderRadius.circular(20)), child: const Center(child: Icon(Icons.image_outlined, color: blue, size: 72))),
+      const SizedBox(height: 18), Text(product.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)), const SizedBox(height: 8),
+      Text(product.price, style: const TextStyle(color: blue, fontSize: 20)), const SizedBox(height: 12), Text(product.description),
+      const SizedBox(height: 24), ElevatedButton(onPressed: () => Navigator.pop(context, product), child: Text(editable ? 'اعتماد تجريبي' : 'رجوع')),
+      OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('رجوع')),
+    ]));
+}
