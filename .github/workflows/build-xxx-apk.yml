@@ -31,10 +31,8 @@ jobs:
           channel: stable
           cache: true
       - name: Generate Android platform scaffold
-        run: |
-          flutter create --platforms=android --project-name xxx_manager /tmp/xxx_scaffold
-          mkdir -p XXX
-          cp -R /tmp/xxx_scaffold/android XXX/android
+        working-directory: XXX
+        run: flutter create --platforms=android .
       - name: Install dependencies
         working-directory: XXX
         run: flutter pub get
