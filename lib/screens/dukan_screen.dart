@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
-import '../core/strings.dart';
+import '../core/app_feedback.dart';\nimport '../core/strings.dart';
 import '../core/theme.dart';
 import '../models/models.dart';
 import '../services/cart_service.dart';
@@ -123,7 +123,7 @@ class _CartButton extends StatelessWidget {
     final n = context.watch<CartService>().count;
     return InkWell(
       customBorder: const CircleBorder(),
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CartScreen())),
+      onTap: () {\n        AppFeedback.lightTap();\n        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CartScreen()));\n      },
       child: Container(
         width: 48,
         height: 48,
