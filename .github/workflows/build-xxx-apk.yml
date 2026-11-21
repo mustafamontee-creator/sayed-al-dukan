@@ -36,9 +36,9 @@ jobs:
       - name: Install dependencies
         working-directory: XXX
         run: flutter pub get
-      - name: Analyze (informational)
+      - name: Analyze Dart code
         working-directory: XXX
-        run: flutter analyze || true
+        run: flutter analyze
       - name: Build test APK
         working-directory: XXX
         run: flutter build apk --debug
