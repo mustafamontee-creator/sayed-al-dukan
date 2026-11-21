@@ -2,12 +2,6 @@ name: Build XXX Manager APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - xxx-manager-app
-    paths:
-      - 'XXX/**'
-      - '.github/workflows/build-xxx-apk.yml'
 
 permissions:
   contents: read
