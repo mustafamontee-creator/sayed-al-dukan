@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';\nimport '../core/app_feedback.dart';
 
 import '../core/strings.dart';
 import '../core/theme.dart';
@@ -45,7 +45,7 @@ class _ShellState extends State<Shell> {
                   for (var n = 0; n < items.length; n++)
                     Expanded(
                       child: InkWell(
-                        onTap: () => setState(() => _i = n),
+                        onTap: () {\n                          AppFeedback.selection();\n                          setState(() => _i = n);\n                        },
                         child: n == 2
                             ? Center(
                                 child: Container(
