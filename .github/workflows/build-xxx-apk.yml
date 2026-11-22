@@ -2,6 +2,12 @@ name: Build XXX Manager APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - xxx-manager-app
+    paths:
+      - 'XXX/**'
+      - '.github/workflows/build-xxx-apk.yml'
 
 permissions:
   contents: read
@@ -33,13 +39,13 @@ jobs:
       - name: Analyze (informational)
         working-directory: XXX
         run: flutter analyze || true
-      - name: Build test APK
+      - name: Build APK
         working-directory: XXX
         run: flutter build apk --debug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: XXX-manager-test-apk
+          name: XXX-manager-apk
           path: XXX/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 7
